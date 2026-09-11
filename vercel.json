@@ -1,19 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-
-  "//": [
-    "Vercel 배포 설정. 빌드 없이 파일을 그대로 올리는 정적 사이트다.",
-    "",
-    "캐시를 두 갈래로 나눈다.",
-    "- HTML 과 서비스 워커: 항상 새로 확인한다.",
-    "  이게 없으면 새로 올려도 예전 화면이 한참 동안 나온다.",
-    "- CSS · JS · 아이콘: 오래 캐시해도 된다. 주소에 ?v= 를 붙여 부르므로",
-    "  버전을 올리면 어차피 새 주소가 되어 새로 받는다."
-  ],
-
-  "cleanUrls": false,
-  "trailingSlash": false,
-
+  "trailingSlash": true,
   "headers": [
     {
       "source": "/sw.js",
@@ -24,40 +11,27 @@
     },
     {
       "source": "/(.*).html",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache" }
-      ]
-    },
-    {
-      "source": "/",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache" }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
     },
     {
       "source": "/manifest.webmanifest",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-cache" },
-        { "key": "Content-Type", "value": "application/manifest+json; charset=utf-8" }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
     },
     {
-      "source": "/app/(.*).js",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=604800" }
-      ]
+      "source": "/app/js/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800" }]
+    },
+    {
+      "source": "/app/data/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800" }]
     },
     {
       "source": "/app/css/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=604800" }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=604800" }]
     },
     {
       "source": "/icons/(.*)",
-      "headers": [
-        { "key": "Cache-Control", "value": "public, max-age=2592000" }
-      ]
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=2592000" }]
     }
   ]
 }
