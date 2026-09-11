@@ -14,7 +14,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="시험화이팅">
 
-<link rel="stylesheet" href="css/style.css?v=9">
+<link rel="stylesheet" href="css/style.css?v=10">
 </head>
 <body>
 
@@ -40,6 +40,7 @@
       <a href="#/stats"     data-route="stats">학습 통계</a>
       <a href="#/import"    data-route="import">자료로 문제 만들기</a>
       <a href="#/editor"    data-route="editor">문제 추가 · 편집</a>
+      <a href="#/account"   data-route="account">계정 · 동기화</a>
       <a href="#/data"      data-route="data">백업 · 초기화</a>
     </nav>
 
@@ -57,35 +58,38 @@
 <div id="toast" class="toast" hidden></div>
 
 <!--
-  파일 뒤의 ?v=9 는 브라우저 캐시를 비우기 위한 것입니다.
+  파일 뒤의 ?v=10 은 브라우저 캐시를 비우기 위한 것입니다.
   파일을 고쳐서 올릴 때 이 숫자와 sw.js 의 CACHE 버전을 같이 올리세요.
   안 올리면 브라우저가 예전 파일을 계속 씁니다.
 -->
 
 <!-- 데이터: 이 두 파일만 고치면 문제/과목이 바뀝니다 -->
-<script src="data/curriculum.js?v=9"></script>
-<script src="data/questions.js?v=9"></script>
+<script src="data/curriculum.js?v=10"></script>
+<script src="data/questions.js?v=10"></script>
 
 <!-- 코어 -->
-<script src="js/store.js?v=9"></script>
-<script src="js/app.js?v=9"></script>
-<script src="js/calendar.js?v=9"></script>
-<script src="js/gcal.js?v=9"></script>
+<script src="js/store.js?v=10"></script>
+<script src="js/app.js?v=10"></script>
+<script src="js/calendar.js?v=10"></script>
+<script src="js/gcal.js?v=10"></script>
+<script src="js/sync.js?v=10"></script>
 
 <!-- 화면 -->
-<script src="js/views/home.js?v=9"></script>
-<script src="js/views/schedule.js?v=9"></script>
-<script src="js/views/plan.js?v=9"></script>
-<script src="js/views/quiz.js?v=9"></script>
-<script src="js/views/weakness.js?v=9"></script>
-<script src="js/views/review.js?v=9"></script>
-<script src="js/views/stats.js?v=9"></script>
-<script src="js/views/import.js?v=9"></script>
-<script src="js/views/editor.js?v=9"></script>
-<script src="js/views/data.js?v=9"></script>
+<script src="js/views/home.js?v=10"></script>
+<script src="js/views/schedule.js?v=10"></script>
+<script src="js/views/plan.js?v=10"></script>
+<script src="js/views/quiz.js?v=10"></script>
+<script src="js/views/weakness.js?v=10"></script>
+<script src="js/views/review.js?v=10"></script>
+<script src="js/views/stats.js?v=10"></script>
+<script src="js/views/import.js?v=10"></script>
+<script src="js/views/editor.js?v=10"></script>
+<script src="js/views/account.js?v=10"></script>
+<script src="js/views/data.js?v=10"></script>
 
 <script>
 App.start();
+Sync.boot();          /* 로그인해 둔 상태면 조용히 이어서 동기화 */
 
 /* 오프라인에서도 열리도록 (file:// 로 열었을 때는 건너뛴다) */
 if ("serviceWorker" in navigator && location.protocol !== "file:") {

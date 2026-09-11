@@ -46,6 +46,11 @@ var Store = (function () {
   function write(key, value) {
     try {
       localStorage.setItem(PREFIX + key, JSON.stringify(value));
+      /* 로그인해 두었으면 잠시 뒤 클라우드로 올린다.
+         settings 는 접속 정보·동기화 시각이 들어 있어 되돌이가 생기므로 뺀다. */
+      if (key !== "settings" && typeof Sync !== "undefined" && Sync.onLocalChange) {
+        Sync.onLocalChange();
+      }
       return true;
     } catch (e) {
       console.warn("저장소 쓰기 실패:", key, e);
