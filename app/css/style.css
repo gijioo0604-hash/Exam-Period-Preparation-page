@@ -526,6 +526,7 @@ input:focus, select:focus, textarea:focus {
   font-size: 12.5px;
   color: var(--text-dim);
   white-space: normal;
+  overflow-wrap: anywhere;     /* 파일 이름이 길어도 칸을 넘지 않게 */
 }
 
 /* 자료에서 근거를 찾지 못한 문제. 눈에 띄게 해서 그대로 믿지 않도록 한다. */

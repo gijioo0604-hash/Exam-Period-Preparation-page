@@ -236,10 +236,9 @@ App.register("import", {
     }
 
     /* 자료에서 근거를 찾지 못한 문제인가.
-       빈 칸이든 "자료에 없음" 이든 똑같이 다룬다. */
+       판정은 App 에 하나만 두었다. 여기에 따로 만들면 화면과 어긋난다. */
     function lacksSource(q) {
-      var s = String((q && q.source) || "").trim();
-      return !s || s === App.NO_SOURCE || s === "없음";
+      return App.lacksSource(q && q.source);
     }
 
     function missingUnits(list) {

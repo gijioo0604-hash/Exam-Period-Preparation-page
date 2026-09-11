@@ -51,7 +51,7 @@ var App = (function () {
 
   var NO_SOURCE = "자료에 없음";
 
-  function lacks(s) {
+  function lacksSource(s) {
     s = String(s === undefined || s === null ? "" : s).trim();
     return !s || s === NO_SOURCE || s === "없음";
   }
@@ -59,11 +59,20 @@ var App = (function () {
   function explainHtml(q) {
     q = q || {};
 
-    var body = lacks(q.explain)
-      ? '<span class="no-source">자료에 없음</span> — 이 문제의 해설이 자료에서 확인되지 않았습니다.'
-      : esc(q.explain).replace(/\n/g, "<br>");
+    var body;
+    if (lacksSource(q.explain)) {
+      body = '<span class="no-source">자료에 없음</span> — ' +
+             "이 문제의 해설이 자료에서 확인되지 않았습니다.";
+    } else {
+      body = esc(q.explain).replace(/\n/g, "<br>");
+      /* "자료에 없음 — ..." 처럼 앞머리에 밝혀 둔 경우도 눈에 띄게 한다 */
+      if (body.indexOf(NO_SOURCE) === 0) {
+        body = '<span class="no-source">' + NO_SOURCE + "</span>" +
+               body.slice(NO_SOURCE.length);
+      }
+    }
 
-    var foot = lacks(q.source)
+    var foot = lacksSource(q.source)
       ? '<div class="src no-source">출처: 자료에 없음 — 자료에서 근거를 찾지 못한 문제입니다. ' +
         '교재로 직접 확인하세요.</div>'
       : '<div class="src">출처: ' + esc(q.source) + "</div>";
@@ -401,7 +410,7 @@ var App = (function () {
     register: register, start: start, go: go, render: render,
     refreshChrome: refreshChrome,
 
-    explainHtml: explainHtml, NO_SOURCE: NO_SOURCE,
+    explainHtml: explainHtml, NO_SOURCE: NO_SOURCE, lacksSource: lacksSource,
     esc: esc, $: $, $$: $$, on: on, onChange: onChange, onBlur: onBlur, toast: toast,
 
     TYPE_LABEL: TYPE_LABEL, TYPE_ORDER: TYPE_ORDER,
