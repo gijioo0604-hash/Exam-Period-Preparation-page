@@ -349,6 +349,19 @@ var App = (function () {
     applyTheme(Store.getSettings().theme || "light");
     document.getElementById("themeBtn").addEventListener("click", toggleTheme);
     window.addEventListener("hashchange", render);
+
+    /* 지금 주소와 같은 링크를 누르면 브라우저가 hashchange 를 안 일으킨다.
+       그러면 화면이 그대로 멈춘다 — 문제를 다 푼 뒤 [그만두기] 를 눌러도
+       결과 화면에 갇히는 식이다. 같은 주소면 직접 다시 그린다. */
+    document.addEventListener("click", function (ev) {
+      var a = ev.target.closest('a[href^="#/"]');
+      if (!a) return;
+      if (a.getAttribute("href") === location.hash) {
+        ev.preventDefault();
+        render();
+      }
+    });
+
     if (!location.hash) location.hash = "#/home";
     render();
   }

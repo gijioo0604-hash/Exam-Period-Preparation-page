@@ -40,12 +40,25 @@ var Store = (function () {
     }
   }
 
+  /* 저장이 실패하면 조용히 넘어가면 안 된다.
+     이 앱은 쌓인 기록이 전부인데, 사용자는 저장된 줄 알고 계속 쓰게 된다.
+     저장 공간이 꽉 찼거나 시크릿 모드일 때 실제로 일어난다. */
   function write(key, value) {
     try {
       localStorage.setItem(PREFIX + key, JSON.stringify(value));
       return true;
     } catch (e) {
       console.warn("저장소 쓰기 실패:", key, e);
+
+      var full = e && (e.name === "QuotaExceededError" ||
+                       e.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+                       e.code === 22 || e.code === 1014);
+
+      if (typeof App !== "undefined" && App.toast) {
+        App.toast(full
+          ? "저장 공간이 꽉 찼습니다 — 방금 것이 저장되지 않았습니다. [백업 · 초기화]에서 정리하세요."
+          : "저장에 실패했습니다 — 방금 것이 남지 않습니다. 시크릿 모드인지 확인해 보세요.");
+      }
       return false;
     }
   }

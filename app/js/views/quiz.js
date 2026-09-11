@@ -388,8 +388,9 @@ var QuizEngine = (function () {
         });
       });
     }
+    /* App.go 는 지금 주소와 같아도 다시 그려 준다 */
     App.$("#againBtn", S.mount).addEventListener("click", function () {
-      location.hash = S.backHash;
+      App.go(S.backHash);
     });
     App.refreshChrome();
   }
