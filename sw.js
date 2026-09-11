@@ -77,7 +77,9 @@ self.addEventListener("fetch", function (e) {
       }
       return res;
     }).catch(function () {
-      return caches.match(req).then(function (hit) {
+      /* ignoreSearch: 페이지는 js/store.js?v=3 처럼 버전을 붙여 부르는데
+         미리 받아 둔 건 ?v= 가 없는 주소다. 쿼리를 무시하고 찾아야 맞물린다. */
+      return caches.match(req, { ignoreSearch: true }).then(function (hit) {
         if (hit) return hit;
         /* 앱 내부 경로면 앱 껍데기라도 돌려준다 */
         if (req.mode === "navigate") {
