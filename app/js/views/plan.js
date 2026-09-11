@@ -172,10 +172,8 @@ App.register("plan", {
                 '<div class="row-side">' +
                   '<button class="btn btn-sm" data-add-unit="' + App.esc(c.name) +
                     '" type="button">＋ 단원</button>' +
-                  (c.custom
-                    ? '<button class="btn btn-sm btn-danger" data-del-subject="' + App.esc(c.name) +
-                      '" type="button">과목 삭제</button>'
-                    : "") +
+                  '<button class="btn btn-sm btn-danger" data-del-subject="' + App.esc(c.name) +
+                    '" type="button">과목 지우기</button>' +
                 "</div>" +
               "</div>" +
               (addingUnitTo === c.name
@@ -188,6 +186,39 @@ App.register("plan", {
             }).join("") +
           "</div>" +
         "</div>";
+
+      /* ---- 목록에서 뺀 과목 · 단원 되돌리기 ---- */
+      var hid = Store.hiddenList();
+      if (hid.subjects.length || hid.units.length) {
+        html += '<div class="section-head"><h2>목록에서 뺀 항목</h2>' +
+          '<span class="hint">' + (hid.subjects.length + hid.units.length) + "개</span></div>" +
+          '<div class="card">' +
+            '<p class="small muted mt-0">' +
+              "화면에서만 빠져 있습니다. 기록은 그대로 있으니 되돌리면 그대로 돌아옵니다." +
+            "</p>" +
+            '<div class="list">' +
+              hid.subjects.map(function (name) {
+                return '<div class="row"><div class="row-main">' +
+                  '<div class="row-title">' + App.esc(name) +
+                    ' <span class="badge">과목</span></div>' +
+                "</div><div class=\"row-side\">" +
+                  '<button class="btn btn-sm" data-unhide-subject="' + App.esc(name) +
+                    '" type="button">다시 표시</button>' +
+                "</div></div>";
+              }).join("") +
+              hid.units.map(function (x) {
+                return '<div class="row"><div class="row-main">' +
+                  '<div class="row-title">' + App.esc(x.unit) +
+                    ' <span class="badge">단원</span></div>' +
+                  '<div class="row-sub">' + App.esc(x.subject) + "</div>" +
+                "</div><div class=\"row-side\">" +
+                  '<button class="btn btn-sm" data-unhide-unit="' +
+                    App.esc(x.subject + "::" + x.unit) + '" type="button">다시 표시</button>' +
+                "</div></div>";
+              }).join("") +
+            "</div>" +
+          "</div>";
+      }
 
       /* ---- 이름이 어긋난 문제 경고 ---- */
       var orphans = Store.orphanQuestions();
@@ -267,10 +298,8 @@ App.register("plan", {
                     '" type="button" title="이 단원 문제를 지금 풀어 봅니다">풀기</button>' : "") +
             '<button class="btn btn-sm btn-ghost" data-add-mat="' + App.esc(key) +
               '" type="button" title="이 단원의 PDF·필기 링크 추가">＋ 자료</button>' +
-            (Store.isCustomUnit(c.name, u)
-              ? '<button class="btn btn-sm btn-danger" data-del-unit="' + App.esc(key) +
-                '" type="button">삭제</button>'
-              : "") +
+            '<button class="btn btn-sm btn-danger" data-del-unit="' + App.esc(key) +
+              '" type="button" title="이 단원을 목록에서 지웁니다">지우기</button>' +
           "</div>" +
 
           /* 이 단원에 걸어 둔 자료 */
@@ -422,10 +451,70 @@ App.register("plan", {
 
       App.on(mount, "[data-del-subject]", function (ev, el) {
         var name = el.getAttribute("data-del-subject");
-        if (!confirm("과목 \"" + name + "\" 을(를) 목록에서 지울까요?\n\n" +
-                     "이 과목으로 만든 문제와 기록은 지워지지 않습니다.")) return;
-        Store.removeSubject(name);
+        var d = Store.subjectDataCount(name);
+
+        /* 지울 수 있는 것 — 브라우저에 저장된 내 기록 */
+        var erasable = [];
+        if (d.attempts)  erasable.push("푼 기록 " + d.attempts + "건");
+        if (d.wrong)     erasable.push("오답 " + d.wrong + "개");
+        if (d.plans)     erasable.push("공부 계획 " + d.plans + "개");
+        if (d.progress)  erasable.push("진도 체크 " + d.progress + "개");
+        if (d.materials) erasable.push("자료 링크 " + d.materials + "개");
+        if (d.custom)    erasable.push("내가 만든 문제 " + d.custom + "개");
+
+        /* 파일에 박혀 있어 브라우저에서는 못 지우는 문제 */
+        var fileQ = d.questions - d.custom;
+
+        var msg = "과목 \"" + name + "\" 을(를) 목록에서 지웁니다.\n\n";
+        if (d.questions) msg += "이 과목 문제 " + d.questions + "개는 남습니다.\n";
+        if (erasable.length) msg += "딸린 내 기록: " + erasable.join(", ") + "\n";
+        msg += "\n지금은 목록에서만 빼고 기록은 건드리지 않습니다.\n계속할까요?";
+
+        if (!confirm(msg)) return;
+
+        var how = Store.removeSubjectAny(name);
+
+        /* 기록까지 정리할지 한 번 더 묻는다 — 되돌릴 수 없어서 따로 확인 */
+        if (erasable.length) {
+          var msg2 = "이 과목의 내 기록도 함께 지울까요?\n\n" +
+                     erasable.join("\n") + "\n\n";
+          if (fileQ) {
+            msg2 += "(data/questions.js 에 들어 있는 문제 " + fileQ +
+                    "개는 브라우저에서 지울 수 없어 그대로 남습니다)\n\n";
+          }
+          msg2 += "[취소] — 기록을 남깁니다. 과목을 되살리면 그대로 돌아옵니다.\n" +
+                  "[확인] — 되돌릴 수 없습니다.";
+
+          if (confirm(msg2)) {
+            Store.purgeSubjectData(name);
+            App.toast("과목과 기록을 지웠습니다");
+          } else {
+            App.toast(how === "deleted"
+              ? "과목을 지웠습니다 (기록은 남김)"
+              : "과목을 목록에서 뺐습니다 (아래에서 되돌릴 수 있습니다)");
+          }
+        } else {
+          App.toast(how === "deleted"
+            ? "과목을 지웠습니다"
+            : "과목을 목록에서 뺐습니다 (아래에서 되돌릴 수 있습니다)");
+        }
+
         if (openSubject === name) openSubject = null;
+        App.refreshChrome();
+        draw();
+      });
+
+      /* 숨긴 항목 되돌리기 */
+      App.on(mount, "[data-unhide-subject]", function (ev, el) {
+        Store.unhideSubject(el.getAttribute("data-unhide-subject"));
+        App.toast("다시 표시합니다");
+        draw();
+      });
+
+      App.on(mount, "[data-unhide-unit]", function (ev, el) {
+        var p = el.getAttribute("data-unhide-unit").split("::");
+        Store.unhideUnit(p[0], p[1]);
+        App.toast("다시 표시합니다");
         draw();
       });
 
@@ -511,8 +600,13 @@ App.register("plan", {
 
       App.on(mount, "[data-del-unit]", function (ev, el) {
         var parts = el.getAttribute("data-del-unit").split("::");
-        if (!confirm("단원 \"" + parts[1] + "\" 을(를) 목록에서 지울까요?")) return;
-        Store.removeUnit(parts[0], parts[1]);
+        var n = Store.allQuestions().filter(function (q) {
+          return q.subject === parts[0] && q.unit === parts[1];
+        }).length;
+        if (!confirm("단원 \"" + parts[1] + "\" 을(를) 목록에서 지웁니다.\n\n" +
+                     (n ? "이 단원 문제 " + n + "개는 그대로 남습니다.\n" : "") +
+                     "계속할까요?")) return;
+        Store.removeUnitAny(parts[0], parts[1]);
         draw();
       });
     }

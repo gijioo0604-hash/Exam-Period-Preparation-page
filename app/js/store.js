@@ -21,11 +21,13 @@ var Store = (function () {
     plans:    [],   // 공부 계획 {id, subject, title, done, ts}
     sessions: [],   // 문제 풀기 기록 {id, ts, title, desc, qids, total, right}
     materials: {},  // 단원 자료 {"과목::단원": [{id, label, path}]}
+    hidden:   { subjects: [], units: {} },   // 목록에서 치운 과목 · 단원
     settings: { theme: "light" }
   };
 
   var KEYS = ["attempts", "wrong", "schedule", "progress", "custom",
-              "subjects", "units", "plans", "sessions", "materials", "settings"];
+              "subjects", "units", "plans", "sessions", "materials",
+              "hidden", "settings"];
 
   function read(key) {
     try {
@@ -54,10 +56,20 @@ var Store = (function () {
      화면에서 과목이나 단원을 추가하면 여기서 합쳐져서 사이트 전체에 반영된다.
      base 는 파일에 적힌 것, extra 는 사용자가 추가한 것 (지울 수 있음). */
 
-  function curriculum() {
+  function getHidden() {
+    var h = read("hidden");
+    if (!h || typeof h !== "object") h = { subjects: [], units: {} };
+    if (!Array.isArray(h.subjects)) h.subjects = [];
+    if (!h.units || typeof h.units !== "object") h.units = {};
+    return h;
+  }
+
+  /* includeHidden 을 주면 치워 둔 것까지 전부 돌려준다 (오타 검사용) */
+  function curriculum(includeHidden) {
     var base = (typeof CURRICULUM !== "undefined") ? clone(CURRICULUM) : [];
     var extraUnits = read("units");
     var extraSubjects = read("subjects");
+    var hid = getHidden();
 
     base.forEach(function (c) {
       c.custom = false;
@@ -80,7 +92,153 @@ var Store = (function () {
       names[s.name] = true;
     });
 
-    return base;
+    if (includeHidden) return base;
+
+    /* 치워 둔 과목 · 단원은 목록에서 뺀다 */
+    return base
+      .filter(function (c) { return hid.subjects.indexOf(c.name) < 0; })
+      .map(function (c) {
+        var hu = hid.units[c.name] || [];
+        c.units = c.units.filter(function (u) { return hu.indexOf(u) < 0; });
+        return c;
+      });
+  }
+
+  /* ---------- 과목 · 단원 치우기 ----------
+     data/curriculum.js 에 적힌 기본 항목은 파일을 고치지 않는 한 지울 수 없다.
+     그래서 '숨김' 목록에 넣어 화면에서만 빼고, 언제든 되돌릴 수 있게 한다.
+     화면에서 직접 추가한 것은 진짜로 지운다. */
+
+  function hideSubject(name) {
+    var h = getHidden();
+    if (h.subjects.indexOf(name) < 0) h.subjects.push(name);
+    write("hidden", h);
+  }
+
+  function unhideSubject(name) {
+    var h = getHidden();
+    h.subjects = h.subjects.filter(function (x) { return x !== name; });
+    write("hidden", h);
+  }
+
+  function hideUnit(subject, unit) {
+    var h = getHidden();
+    if (!h.units[subject]) h.units[subject] = [];
+    if (h.units[subject].indexOf(unit) < 0) h.units[subject].push(unit);
+    write("hidden", h);
+  }
+
+  function unhideUnit(subject, unit) {
+    var h = getHidden();
+    if (!h.units[subject]) return;
+    h.units[subject] = h.units[subject].filter(function (x) { return x !== unit; });
+    if (!h.units[subject].length) delete h.units[subject];
+    write("hidden", h);
+  }
+
+  /* 숨긴 항목 목록 — 되돌리기 화면에 쓴다 */
+  function hiddenList() {
+    var h = getHidden();
+    var out = { subjects: h.subjects.slice(), units: [] };
+    Object.keys(h.units).forEach(function (s) {
+      (h.units[s] || []).forEach(function (u) { out.units.push({ subject: s, unit: u }); });
+    });
+    return out;
+  }
+
+  function hiddenCount() {
+    var l = hiddenList();
+    return l.subjects.length + l.units.length;
+  }
+
+  /* 과목을 목록에서 없앤다 — 직접 추가한 것이면 삭제, 기본 과목이면 숨김 */
+  function removeSubjectAny(name) {
+    var extra = read("subjects");
+    var isCustom = extra.some(function (s) { return s.name === name; });
+    if (isCustom) {
+      write("subjects", extra.filter(function (s) { return s.name !== name; }));
+      var u = read("units"); delete u[name]; write("units", u);
+    } else {
+      hideSubject(name);
+    }
+    return isCustom ? "deleted" : "hidden";
+  }
+
+  /* 단원도 마찬가지 */
+  function removeUnitAny(subject, unit) {
+    if (isCustomUnit(subject, unit)) {
+      removeUnit(subject, unit);
+      return "deleted";
+    }
+    hideUnit(subject, unit);
+    return "hidden";
+  }
+
+  /* 그 과목에 딸린 내 기록을 함께 지운다 (선택 사항) */
+  function purgeSubjectData(name) {
+    var removed = { attempts: 0, wrong: 0, plans: 0, custom: 0, progress: 0, materials: 0 };
+
+    var at = read("attempts");
+    var keptAt = at.filter(function (a) { return a.subject !== name; });
+    removed.attempts = at.length - keptAt.length;
+    write("attempts", keptAt);
+
+    var w = read("wrong");
+    Object.keys(w).forEach(function (id) {
+      var q = questionById(id);
+      if (q && q.subject === name) { delete w[id]; removed.wrong++; }
+    });
+    write("wrong", w);
+
+    var pl = read("plans");
+    var keptPl = pl.filter(function (p) { return p.subject !== name; });
+    removed.plans = pl.length - keptPl.length;
+    write("plans", keptPl);
+
+    var cu = read("custom");
+    var keptCu = cu.filter(function (q) { return q.subject !== name; });
+    removed.custom = cu.length - keptCu.length;
+    write("custom", keptCu);
+
+    var pr = read("progress");
+    Object.keys(pr).forEach(function (k) {
+      if (k.indexOf(name + "::") === 0) { delete pr[k]; removed.progress++; }
+    });
+    write("progress", pr);
+
+    var ma = read("materials");
+    Object.keys(ma).forEach(function (k) {
+      if (k.indexOf(name + "::") === 0) { removed.materials += ma[k].length; delete ma[k]; }
+    });
+    write("materials", ma);
+
+    return removed;
+  }
+
+  /* 지우기 전에 무엇이 딸려 있는지 세어 준다 */
+  function subjectDataCount(name) {
+    var w = read("wrong");
+    var wrongN = 0;
+    Object.keys(w).forEach(function (id) {
+      var q = questionById(id);
+      if (q && q.subject === name) wrongN++;
+    });
+    var mats = 0;
+    var ma = read("materials");
+    Object.keys(ma).forEach(function (k) {
+      if (k.indexOf(name + "::") === 0) mats += ma[k].length;
+    });
+    return {
+      attempts: read("attempts").filter(function (a) { return a.subject === name; }).length,
+      wrong: wrongN,
+      plans: read("plans").filter(function (p) { return p.subject === name; }).length,
+      custom: read("custom").filter(function (q) { return q.subject === name; }).length,
+      progress: Object.keys(read("progress")).filter(function (k) {
+        return k.indexOf(name + "::") === 0;
+      }).length,
+      materials: mats,
+      questions: allQuestions().filter(function (q) { return q.subject === name; }).length
+    };
   }
 
   function subjectNames() {
@@ -135,10 +293,11 @@ var Store = (function () {
     return (read("units")[subjectName] || []).indexOf(unitName) >= 0;
   }
 
-  /* 문제의 과목/단원이 목록에 없는 경우를 찾아낸다 (오타 잡기용) */
+  /* 문제의 과목/단원이 목록에 없는 경우를 찾아낸다 (오타 잡기용).
+     일부러 치워 둔 과목·단원은 오타가 아니므로 제외한다. */
   function orphanQuestions() {
     var valid = {};
-    curriculum().forEach(function (c) {
+    curriculum(true).forEach(function (c) {
       c.units.forEach(function (u) { valid[c.name + "::" + u] = true; });
     });
     return allQuestions().filter(function (q) {
@@ -474,6 +633,15 @@ var Store = (function () {
     removeUnit: removeUnit,
     isCustomUnit: isCustomUnit,
     orphanQuestions: orphanQuestions,
+
+    removeSubjectAny: removeSubjectAny,
+    removeUnitAny: removeUnitAny,
+    unhideSubject: unhideSubject,
+    unhideUnit: unhideUnit,
+    hiddenList: hiddenList,
+    hiddenCount: hiddenCount,
+    purgeSubjectData: purgeSubjectData,
+    subjectDataCount: subjectDataCount,
 
     getMaterials: getMaterials,
     addMaterial: addMaterial,

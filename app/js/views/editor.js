@@ -31,6 +31,19 @@ App.register("editor", {
         return !listSubject || q.subject === listSubject;
       });
 
+      /* 과목을 전부 지우면 문제를 만들 수가 없다 */
+      if (!Store.curriculum().length) {
+        mount.innerHTML =
+          '<div class="page-head"><h1>문제 추가 · 편집</h1></div>' +
+          '<div class="card"><div class="empty">' +
+            "과목이 하나도 없습니다.<br>문제를 만들려면 과목이 먼저 있어야 합니다." +
+          "</div>" +
+          '<div class="btn-row" style="justify-content:center">' +
+            '<a class="btn btn-primary" href="#/plan">공부 계획 · 진도에서 과목 추가</a>' +
+          "</div></div>";
+        return;
+      }
+
       mount.innerHTML =
         '<div class="page-head">' +
           "<h1>문제 추가 · 편집</h1>" +

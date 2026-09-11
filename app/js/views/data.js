@@ -8,12 +8,19 @@ App.register("data", {
   render: function (mount) {
 
     function counts() {
+      var mats = 0;
+      Store.curriculum().forEach(function (c) {
+        c.units.forEach(function (u) { mats += Store.materialCount(c.name, u); });
+      });
       return {
         attempts: Store.getAttempts().length,
         wrong: Object.keys(Store.getWrong()).length,
         schedule: Store.getSchedule().length,
         progress: Object.keys(Store.getProgress()).length,
-        custom: Store.getCustom().length
+        custom: Store.getCustom().length,
+        plans: Store.getPlans().length,
+        sessions: Store.getSessions().length,
+        materials: mats
       };
     }
 
@@ -30,7 +37,11 @@ App.register("data", {
           tile("푼 기록", c.attempts + "건") +
           tile("오답 문항", c.wrong + "개") +
           tile("일정", c.schedule + "건") +
+          tile("공부 계획", c.plans + "개") +
           tile("내 문제", c.custom + "개") +
+          tile("풀이 기록", c.sessions + "회") +
+          tile("단원 자료", c.materials + "개") +
+          tile("진도 체크", c.progress + "개") +
         "</div>" +
 
         '<div class="section-head"><h2>내보내기</h2>' +
@@ -59,9 +70,15 @@ App.register("data", {
         '<div class="card"><div class="list">' +
           resetRow("attempts", "푼 기록", "정답률 · 통계 · 약점 분석이 모두 초기화됩니다") +
           resetRow("wrong", "오답노트", "메모도 함께 지워집니다") +
+          resetRow("sessions", "문제 풀기 기록", "지난 세션 다시 풀기 목록") +
           resetRow("schedule", "일정", "시험 · 과제 · 대외활동 전체") +
+          resetRow("plans", "공부 계획", "과목별로 적어 둔 할 일") +
           resetRow("progress", "진도 체크", "단원 체크만 지웁니다") +
+          resetRow("materials", "단원 자료 링크", "PDF 파일 자체는 지워지지 않습니다") +
           resetRow("custom", "내가 추가한 문제", "data/questions.js 의 문제는 남습니다") +
+          resetRow("subjects", "내가 추가한 과목", "그 과목으로 만든 문제와 기록은 남습니다") +
+          resetRow("units", "내가 추가한 단원", "기본 단원은 그대로입니다") +
+          resetRow("hidden", "숨긴 과목 · 단원", "숨겨 둔 항목이 다시 보이게 됩니다") +
         "</div></div>" +
 
         '<div class="section-head"><h2>전체 초기화</h2></div>' +
