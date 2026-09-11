@@ -127,11 +127,11 @@ App.register("schedule", {
           '<label class="field">' + (hasEnd ? "시작일" : "날짜") +
             '<input type="date" id="fDate" value="' + App.esc(v.date) + '"></label>' +
 
-          '<label class="field">마감일 <span class="opt">(며칠에 걸친 일이면 입력)</span>' +
+          '<label class="field">마감일 <span class="opt">(여러 날 걸리면)</span>' +
             '<input type="date" id="fEnd" value="' + App.esc(v.endDate || "") +
             '" min="' + App.esc(v.date) + '"></label>' +
 
-          '<label class="field span-2">시각 <span class="opt">(선택 · 마감일이 있으면 마감 시각)</span>' +
+          '<label class="field span-2">시각 <span class="opt">(선택 · 마감 시각)</span>' +
             '<input type="time" id="fTime" value="' + App.esc(v.time || "") + '"></label>' +
 
           '<label class="field span-2">메모 <span class="opt">(선택)</span>' +

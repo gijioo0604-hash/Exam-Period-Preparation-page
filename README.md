@@ -76,8 +76,8 @@ git push
 브라우저는 한 번 받은 `js/store.js` 를 한동안 다시 받지 않습니다.
 그래서 **파일을 고쳐 올릴 때는 버전 숫자를 같이 올려야** 합니다.
 
-1. `app/index.html` 의 `?v=4` → `?v=5` (전체 바꾸기로 한 번에)
-2. `sw.js` 의 `var CACHE = "examhub-v4"` → `"examhub-v5"`
+1. `app/index.html` 의 `?v=5` → `?v=6` (전체 바꾸기로 한 번에)
+2. `sw.js` 의 `var CACHE = "examhub-v5"` → `"examhub-v6"`
 
 둘 다 올리면 폰에서도 다음 접속에 새 파일을 받습니다.
 `data/questions.js` 만 고쳤을 때도 마찬가지입니다.
