@@ -467,12 +467,17 @@ footer a { color: var(--text-mid); }
 
   document.getElementById("urlBox").value = pageUrl;
 
-  /* GitHub Pages 주소에서 저장소 주소를 유추한다 */
-  var repo = "https://github.com/";
+  /* 소스 저장소 주소.
+     GitHub Pages 로 열었으면 주소에서 알아내고,
+     Vercel 같은 다른 곳에 올렸으면 아래 기본값을 쓴다.
+     저장소를 옮기거나 포크했다면 이 한 줄만 바꾸면 된다. */
+  var REPO = "https://github.com/gijioo0604-hash/Exam-Period-Preparation-page";
+
+  var repo = REPO;
   var m = location.hostname.match(/^([^.]+)\.github\.io$/);
   if (m) {
     var seg = location.pathname.split("/").filter(Boolean)[0];
-    repo += m[1] + (seg ? "/" + seg : "");
+    repo = "https://github.com/" + m[1] + (seg ? "/" + seg : "");
   }
   document.getElementById("repoLink").href = repo;
   document.getElementById("repoLink2").href = repo;
