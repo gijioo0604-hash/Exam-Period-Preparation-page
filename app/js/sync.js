@@ -24,7 +24,7 @@ var Sync = (function () {
   var user = null;
   var ready = false;           // SDK 와 설정이 준비됐는지
   var pushTimer = null;
-  var listeners = [];
+  var listeners = {};
   var lastError = "";
   var busy = false;
 
@@ -164,8 +164,16 @@ var Sync = (function () {
 
   /* ---------- 상태 알림 ---------- */
 
-  function onChange(fn) { listeners.push(fn); }
-  function emit() { listeners.forEach(function (f) { try { f(); } catch (e) { /* 무시 */ } }); }
+  /* 이름을 붙여 등록한다. 화면은 들어올 때마다 다시 등록되는데,
+     그냥 쌓으면 한 번 바뀔 때 화면을 열었던 횟수만큼 다시 그린다. */
+  function onChange(name, fn) {
+    listeners[name] = fn;
+  }
+  function emit() {
+    Object.keys(listeners).forEach(function (k) {
+      try { listeners[k](); } catch (e) { /* 무시 */ }
+    });
+  }
 
   /* ---------- 마지막 동기화 시각 ---------- */
 
@@ -260,13 +268,22 @@ var Sync = (function () {
     }).catch(function (e) { lastError = friendly(e); busy = false; emit(); throw e; });
   }
 
-  /* 설정(Firebase 접속 정보)은 덮어쓰지 않는다 */
+  /* 설정(Firebase 접속 정보)은 덮어쓰지 않는다.
+     받아 온 것을 저장하는 중에는 '바뀌었으니 올려라' 가 걸리지 않게 막는다.
+     안 막으면 내려받자마자 똑같은 것을 다시 올린다. */
+  var applying = false;
+
   function applySnapshot(snap) {
     var keepFb = Store.getSettings().firebase;
     var keepMeta = Store.getSettings().syncMeta;
-    Store.importAll(snap);
-    if (keepFb) Store.setSetting("firebase", keepFb);
-    if (keepMeta) Store.setSetting("syncMeta", keepMeta);
+    applying = true;
+    try {
+      Store.importAll(snap);
+      if (keepFb) Store.setSetting("firebase", keepFb);
+      if (keepMeta) Store.setSetting("syncMeta", keepMeta);
+    } finally {
+      applying = false;
+    }
   }
 
   /* ---------- 합치기 ---------- */
@@ -309,7 +326,10 @@ var Sync = (function () {
     out.custom   = mergeById(local.custom,   cloud.custom,   cloudNewer);
     out.plans    = mergeById(local.plans,    cloud.plans,    cloudNewer);
     out.subjects = mergeById(local.subjects, cloud.subjects, cloudNewer);
-    out.sessions = mergeById(local.sessions, cloud.sessions, cloudNewer).slice(-200);
+    /* 200개만 남기는데, 정렬하지 않고 자르면 최근 것이 잘려 나갈 수 있다 */
+    out.sessions = mergeById(local.sessions, cloud.sessions, cloudNewer)
+      .sort(function (a, b) { return (a.ts || 0) - (b.ts || 0); })
+      .slice(-200);
 
     /* 오답 — 많이 틀린 쪽과 최근 기록을 살린다 */
     out.wrong = {};
@@ -387,7 +407,7 @@ var Sync = (function () {
      저장할 때마다 바로 올리면 요청이 너무 잦다. 잠깐 모았다가 한 번에 올린다. */
 
   function onLocalChange() {
-    if (!user || !ready) return;
+    if (!user || !ready || applying) return;
     clearTimeout(pushTimer);
     pushTimer = setTimeout(function () {
       push().catch(function () { /* 실패해도 다음 기회에 다시 올린다 */ });

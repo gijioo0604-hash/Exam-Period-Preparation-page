@@ -10,7 +10,7 @@ App.register("account", {
     var showSetup = false;
     var showRules = false;
 
-    Sync.onChange(function () {
+    Sync.onChange("account", function () {
       /* 다른 화면에 있을 때 다시 그리면 안 된다 */
       if (location.hash.indexOf("account") >= 0) draw();
     });
@@ -91,7 +91,7 @@ App.register("account", {
       }
 
       /* ---- 설정 입력 ---- */
-      if (showSetup || (!cfg && showSetup !== false)) {
+      if (showSetup) {
         html += setupCard(cfg);
       }
 
