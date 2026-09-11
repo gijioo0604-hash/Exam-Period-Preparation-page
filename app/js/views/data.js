@@ -112,7 +112,7 @@ App.register("data", {
         var blob = new Blob([json], { type: "application/json" });
         var a = document.createElement("a");
         a.href = URL.createObjectURL(blob);
-        a.download = "시험허브_백업_" + App.todayStr() + ".json";
+        a.download = "시험기간화이팅_백업_" + App.todayStr() + ".json";
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);

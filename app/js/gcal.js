@@ -51,7 +51,7 @@ var GCal = (function () {
     var parts = [];
     if (s.subject) parts.push("과목: " + s.subject);
     if (s.memo) parts.push(s.memo);
-    parts.push("— 시험기간 대비 허브");
+    parts.push("— 시험기간 화이팅!");
     return parts.join("\n");
   }
 
@@ -108,7 +108,7 @@ var GCal = (function () {
     var lines = [
       "BEGIN:VCALENDAR",
       "VERSION:2.0",
-      "PRODID:-//시험기간 대비 허브//KO",
+      "PRODID:-//시험기간 화이팅!//KO",
       "CALSCALE:GREGORIAN",
       "METHOD:PUBLISH",
       "X-WR-CALNAME:시험기간 일정"
@@ -201,6 +201,15 @@ var GCal = (function () {
 
   function isConnected() { return !!token; }
 
+  /* 연결을 끊는다. 구글 쪽에 준 권한도 같이 거둔다. */
+  function disconnect() {
+    var t = token;
+    token = null;
+    if (t && window.google && google.accounts && google.accounts.oauth2) {
+      try { google.accounts.oauth2.revoke(t); } catch (e) { /* 이미 만료됐으면 그만 */ }
+    }
+  }
+
   function eventBody(s) {
     var start = App.startOf(s), end = App.endOf(s);
     var body = { summary: title(s), description: details(s) };
@@ -254,6 +263,7 @@ var GCal = (function () {
     downloadIcs: downloadIcs,
     connect: connect,
     isConnected: isConnected,
+    disconnect: disconnect,
     push: push
   };
 })();

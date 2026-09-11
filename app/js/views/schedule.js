@@ -118,10 +118,10 @@ App.register("schedule", {
         "폰 기본 캘린더와 알림을 그대로 쓸 수 있어서 편합니다.<br>" +
         "<strong>안 해도 됩니다.</strong> 이 앱만으로도 일정 관리는 다 됩니다.</p>" +
         '<div class="btn-row mt-2">' +
-          '<button class="btn btn-primary" id="gcalYes" type="button">쓸래요</button>' +
-          '<button class="btn btn-ghost" id="gcalNo" type="button">안 쓸래요</button>' +
+          '<button class="btn btn-primary" id="gcalYes" type="button">연결할게요</button>' +
+          '<button class="btn" id="gcalNo" type="button">연결 안 함</button>' +
         "</div>" +
-        '<p class="small muted mt-1">나중에 마음이 바뀌면 이 화면에서 다시 켤 수 있습니다.</p>' +
+        '<p class="small muted mt-1">나중에 마음이 바뀌면 이 화면 맨 아래에서 다시 켤 수 있습니다.</p>' +
       "</div>";
     }
 
@@ -183,12 +183,17 @@ App.register("schedule", {
             '<input type="text" id="gcalClient" value="' + App.esc(g.clientId || "") +
             '" placeholder="000000-xxxx.apps.googleusercontent.com"></label>' +
           '<div class="btn-row mt-1">' +
-            '<button class="btn btn-sm" id="gcalConnect" type="button">연결하기</button>' +
+            '<button class="btn btn-sm" id="gcalConnect" type="button">' +
+              (GCal.isConnected() ? "다시 연결" : "연결하기") + "</button>" +
             '<button class="btn btn-sm btn-primary" id="gcalPush" type="button"' +
-              (pending.length ? "" : " disabled") + ">" + pending.length + "건 보내기</button>" +
+              (pending.length && GCal.isConnected() ? "" : " disabled") + ">" +
+              pending.length + "건 보내기</button>" +
+            (GCal.isConnected() || g.clientId
+              ? '<button class="btn btn-sm btn-danger" id="gcalDisconnect" type="button">연결 안 함</button>'
+              : "") +
           "</div>" +
           '<p class="small muted mt-1" id="gcalState">' +
-            (GCal.isConnected() ? "연결됨" : "연결 전") + "</p>" +
+            (GCal.isConnected() ? "연결됨" : "연결 전 — [연결하기] 를 눌러야 보낼 수 있습니다") + "</p>" +
         "</div>" +
       "</div>";
     }
@@ -363,6 +368,16 @@ App.register("schedule", {
           App.$("#gcalState", mount).textContent = "연결 실패 — " + e.message;
           App.toast("연결하지 못했습니다");
         });
+      });
+
+      var disc = App.$("#gcalDisconnect", mount);
+      if (disc) disc.addEventListener("click", function () {
+        if (!confirm("구글 연결을 끊고 클라이언트 ID 도 지울까요?\n\n" +
+                     "이미 캘린더에 보낸 일정은 그대로 남습니다.")) return;
+        GCal.disconnect();
+        saveGcal({ clientId: "" });
+        App.toast("연결을 끊었습니다");
+        draw();
       });
 
       var push = App.$("#gcalPush", mount);

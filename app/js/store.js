@@ -644,7 +644,7 @@ var Store = (function () {
 
   function exportAll() {
     var out = {
-      _app: "시험기간 대비 허브",
+      _app: "시험기간 화이팅!",
       _version: 2,
       _exportedAt: new Date().toISOString()
     };
