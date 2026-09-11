@@ -875,3 +875,18 @@ hr.sep { border: none; border-top: 1px solid var(--line); margin: 18px 0; }
   color: var(--text-mid);
 }
 .callout-warn { border-color: var(--warn); background: var(--warn-soft); }
+
+/* ---------- 구글 캘린더 연동 ---------- */
+
+.gcal-ask {
+  border-left: 3px solid var(--accent);
+}
+
+.gcal-way {
+  padding: 12px 0;
+  border-top: 1px solid var(--line-soft);
+}
+.gcal-way:first-of-type { border-top: none; }
+.gcal-way strong { font-size: 13.5px; }
+.gcal-way p { margin: 4px 0 8px; line-height: 1.65; }
+.gcal-way .btn-row { margin-top: 6px; }

@@ -50,6 +50,9 @@ App.register("schedule", {
           "<p>시험 · 과제 · 대외활동을 한 곳에 모아 둡니다. 시험으로 등록한 항목만 홈의 D-day 카드에 올라갑니다.</p>" +
         "</div>" +
 
+        gcalAsk() +
+        gcalPanel(all) +
+
         '<div class="card">' +
           Calendar.month(calY, calM, calItems, { max: 3 }) +
           Calendar.legend() +
@@ -82,6 +85,98 @@ App.register("schedule", {
           : "");
 
       wire();
+    }
+
+    /* ---------- 구글 캘린더 ----------
+       연동은 안 해도 된다. 한 번만 물어보고, 답을 기억한다. */
+
+    function gcalSettings() {
+      var s = Store.getSettings().gcal;
+      if (!s || typeof s !== "object") s = { asked: false, on: false, clientId: "" };
+      return s;
+    }
+
+    function saveGcal(patch) {
+      var s = gcalSettings();
+      for (var k in patch) if (patch.hasOwnProperty(k)) s[k] = patch[k];
+      Store.setSetting("gcal", s);
+    }
+
+    /* 처음 한 번만 뜨는 물음 */
+    function gcalAsk() {
+      if (gcalSettings().asked) return "";
+      return '<div class="card gcal-ask">' +
+        '<div class="plan-head">' +
+          "<strong>구글 캘린더에도 넣을까요?</strong>" +
+        "</div>" +
+        '<p class="small muted mt-1">여기 적은 시험 · 과제 일정을 구글 캘린더로 보낼 수 있습니다. ' +
+        "폰 기본 캘린더와 알림을 그대로 쓸 수 있어서 편합니다.<br>" +
+        "<strong>안 해도 됩니다.</strong> 이 앱만으로도 일정 관리는 다 됩니다.</p>" +
+        '<div class="btn-row mt-2">' +
+          '<button class="btn btn-primary" id="gcalYes" type="button">쓸래요</button>' +
+          '<button class="btn btn-ghost" id="gcalNo" type="button">안 쓸래요</button>' +
+        "</div>" +
+        '<p class="small muted mt-1">나중에 마음이 바뀌면 이 화면에서 다시 켤 수 있습니다.</p>' +
+      "</div>";
+    }
+
+    /* 쓰겠다고 했을 때만 보이는 패널 */
+    function gcalPanel(all) {
+      var g = gcalSettings();
+      if (!g.asked || !g.on) {
+        /* 껐어도 다시 켤 수 있는 작은 줄만 남긴다 */
+        if (g.asked && !g.on) {
+          return '<div class="btn-row" style="margin-bottom:12px">' +
+            '<button class="btn btn-ghost btn-sm" id="gcalReopen" type="button">구글 캘린더 연동 켜기</button>' +
+          "</div>";
+        }
+        return "";
+      }
+
+      var pending = all.filter(function (s) { return !s.done; });
+
+      return '<div class="card">' +
+        '<div class="plan-head">' +
+          "<strong>구글 캘린더</strong>" +
+          '<button class="btn btn-sm btn-ghost" id="gcalOff" type="button">연동 끄기</button>' +
+        "</div>" +
+
+        '<p class="small muted mt-1">아래로 갈수록 설정이 필요합니다. 위의 두 가지는 바로 됩니다.</p>' +
+
+        '<div class="gcal-way mt-2">' +
+          "<strong>일정 하나씩 보내기</strong>" +
+          '<p class="small muted">아래 일정 목록의 <b>캘린더</b> 버튼을 누르면 ' +
+          "구글 캘린더 새 일정 화면이 내용이 채워진 채로 열립니다. 저장만 누르면 됩니다.</p>" +
+        "</div>" +
+
+        '<div class="gcal-way">' +
+          "<strong>파일로 한 번에</strong>" +
+          '<p class="small muted">' + pending.length + "건을 파일 하나로 받아 구글 캘린더에서 가져옵니다. " +
+          "구글 캘린더 → 설정 → 가져오기/내보내기 → 파일 선택.</p>" +
+          '<div class="btn-row">' +
+            '<button class="btn btn-sm" id="gcalIcs" type="button"' + (pending.length ? "" : " disabled") +
+              ">.ics 파일 받기</button>" +
+          "</div>" +
+        "</div>" +
+
+        '<div class="gcal-way">' +
+          "<strong>바로 넣기 <span class=\"badge\">설정 필요</span></strong>" +
+          '<p class="small muted">구글에서 받은 클라이언트 ID 를 넣으면 버튼 한 번으로 캘린더에 들어갑니다. ' +
+          '<a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">구글 클라우드 콘솔</a>' +
+          "에서 OAuth 클라이언트 ID(웹 애플리케이션)를 만들고, 허용 출처에 " +
+          '<span class="mono">' + App.esc(location.origin) + "</span> 을 넣으세요.</p>" +
+          '<label class="field">클라이언트 ID' +
+            '<input type="text" id="gcalClient" value="' + App.esc(g.clientId || "") +
+            '" placeholder="000000-xxxx.apps.googleusercontent.com"></label>' +
+          '<div class="btn-row mt-1">' +
+            '<button class="btn btn-sm" id="gcalConnect" type="button">연결하기</button>' +
+            '<button class="btn btn-sm btn-primary" id="gcalPush" type="button"' +
+              (pending.length ? "" : " disabled") + ">" + pending.length + "건 보내기</button>" +
+          "</div>" +
+          '<p class="small muted mt-1" id="gcalState">' +
+            (GCal.isConnected() ? "연결됨" : "연결 전") + "</p>" +
+        "</div>" +
+      "</div>";
     }
 
     /* ---------- 입력 폼 ---------- */
@@ -127,7 +222,7 @@ App.register("schedule", {
           '<label class="field">' + (hasEnd ? "시작일" : "날짜") +
             '<input type="date" id="fDate" value="' + App.esc(v.date) + '"></label>' +
 
-          '<label class="field">마감일 <span class="opt">(여러 날 걸리면)</span>' +
+          '<label class="field">마감일' +
             '<input type="date" id="fEnd" value="' + App.esc(v.endDate || "") +
             '" min="' + App.esc(v.date) + '"></label>' +
 
@@ -169,6 +264,10 @@ App.register("schedule", {
           "</div>" +
         "</div>" +
         '<div class="row-side">' + dd +
+          (gcalSettings().on
+            ? '<a class="btn btn-sm" href="' + App.esc(GCal.googleLink(s) || "#") +
+              '" target="_blank" rel="noopener" title="구글 캘린더에 추가">캘린더</a>'
+            : "") +
           '<button class="btn btn-sm" data-done="' + s.id + '" type="button">' +
             (s.done ? "되돌리기" : "완료") + "</button>" +
           '<button class="btn btn-sm" data-edit="' + s.id + '" type="button">수정</button>' +
@@ -185,6 +284,75 @@ App.register("schedule", {
     /* ---------- 이벤트 ---------- */
 
     function wire() {
+
+      /* ---- 구글 캘린더 ---- */
+
+      var yes = App.$("#gcalYes", mount);
+      if (yes) yes.addEventListener("click", function () {
+        saveGcal({ asked: true, on: true });
+        App.toast("연동을 켰습니다");
+        draw();
+      });
+
+      var no = App.$("#gcalNo", mount);
+      if (no) no.addEventListener("click", function () {
+        saveGcal({ asked: true, on: false });
+        App.toast("연동 없이 씁니다. 필요하면 여기서 다시 켤 수 있습니다.");
+        draw();
+      });
+
+      var reopen = App.$("#gcalReopen", mount);
+      if (reopen) reopen.addEventListener("click", function () {
+        saveGcal({ asked: true, on: true });
+        draw();
+      });
+
+      var off = App.$("#gcalOff", mount);
+      if (off) off.addEventListener("click", function () {
+        saveGcal({ on: false });
+        App.toast("연동을 껐습니다");
+        draw();
+      });
+
+      var ics = App.$("#gcalIcs", mount);
+      if (ics) ics.addEventListener("click", function () {
+        var pending = Store.getSchedule().filter(function (s) { return !s.done; });
+        if (!pending.length) { App.toast("보낼 일정이 없습니다"); return; }
+        GCal.downloadIcs(pending);
+        App.toast(pending.length + "건을 파일로 받았습니다");
+      });
+
+      var connect = App.$("#gcalConnect", mount);
+      if (connect) connect.addEventListener("click", function () {
+        var id = App.$("#gcalClient", mount).value.trim();
+        if (!id) { App.toast("클라이언트 ID 를 넣어 주세요"); return; }
+        saveGcal({ clientId: id });
+        App.$("#gcalState", mount).textContent = "연결하는 중…";
+        GCal.connect(id).then(function () {
+          App.$("#gcalState", mount).textContent = "연결됨";
+          App.toast("구글 계정에 연결했습니다");
+        }).catch(function (e) {
+          App.$("#gcalState", mount).textContent = "연결 실패 — " + e.message;
+          App.toast("연결하지 못했습니다");
+        });
+      });
+
+      var push = App.$("#gcalPush", mount);
+      if (push) push.addEventListener("click", function () {
+        if (!GCal.isConnected()) { App.toast("먼저 [연결하기] 를 눌러 주세요"); return; }
+        var pending = Store.getSchedule().filter(function (s) { return !s.done; });
+        if (!pending.length) { App.toast("보낼 일정이 없습니다"); return; }
+        if (!confirm(pending.length + "건을 구글 캘린더에 넣습니다.\n\n" +
+                     "이미 넣은 적이 있으면 같은 일정이 또 생깁니다. 계속할까요?")) return;
+        push.disabled = true;
+        App.$("#gcalState", mount).textContent = "보내는 중…";
+        GCal.push(pending).then(function (r) {
+          push.disabled = false;
+          App.$("#gcalState", mount).textContent =
+            r.ok + "건 완료" + (r.fail ? " · " + r.fail + "건 실패: " + r.errors[0] : "");
+          App.toast(r.fail ? r.ok + "건만 들어갔습니다" : r.ok + "건을 넣었습니다");
+        });
+      });
 
       /* ---- 달력 ---- */
 

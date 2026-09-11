@@ -7,7 +7,7 @@
    파일을 고치면 아래 CACHE 버전을 올려야 브라우저가 새로 받는다.
    ============================================================ */
 
-var CACHE = "examhub-v6";
+var CACHE = "examhub-v7";
 
 /* 스코프 기준 상대 경로 — GitHub Pages 하위 경로에서도 그대로 동작한다 */
 var ASSETS = [
@@ -26,6 +26,7 @@ var ASSETS = [
   "./app/js/store.js",
   "./app/js/app.js",
   "./app/js/calendar.js",
+  "./app/js/gcal.js",
   "./app/js/views/home.js",
   "./app/js/views/schedule.js",
   "./app/js/views/plan.js",
@@ -85,7 +86,7 @@ self.addEventListener("fetch", function (e) {
       }
       return res;
     }).catch(function () {
-      /* ignoreSearch: 페이지는 js/store.js?v=6 처럼 버전을 붙여 부르는데
+      /* ignoreSearch: 페이지는 js/store.js?v=7 처럼 버전을 붙여 부르는데
          미리 받아 둔 건 ?v= 가 없는 주소다. 쿼리를 무시하고 찾아야 맞물린다. */
       return caches.match(req, { ignoreSearch: true }).then(function (hit) {
         if (hit) return hit;
