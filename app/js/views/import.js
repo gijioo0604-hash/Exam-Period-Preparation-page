@@ -8,10 +8,21 @@
      1) [요청문 복사] 로 AI 에게 보낼 지시문을 통째로 복사
      2) Claude 같은 AI 에 PDF 와 함께 붙여넣기
      3) 돌아온 결과를 아래 칸에 붙여넣고 [미리보기] → [추가]
+
+   이 앱은 인터넷에 아무것도 요청하지 않습니다. 자료도 결과도
+   이 컴퓨터 밖으로 나가지 않습니다.
+
+   들여올 때 지키는 것
+     · 한 번에 최소 10문제 (MIN_Q)
+     · 모든 문제에 정답과 해설이 있어야 통과
+     · 출처가 없으면 지어내지 않고 "자료에 없음" 으로 표시
    ============================================================ */
 
 App.register("import", {
   render: function (mount) {
+
+    /* 한 번에 만들 최소 문제 수 */
+    var MIN_Q = 10;
 
     var parsed = null;      // 미리보기 결과 { ok: [], bad: [] }
     var mode = "json";      // json | simple
@@ -41,8 +52,8 @@ App.register("import", {
                   return '<option value="' + App.esc(c.name) + '">' + App.esc(c.name) + "</option>";
                 }).join("") +
               "</select></label>" +
-            '<label class="field">몇 문제쯤' +
-              '<input type="number" id="pCount" min="1" max="100" value="20"></label>' +
+            '<label class="field">몇 문제쯤 <span class="small muted">(최소 ' + MIN_Q + '개)</span>' +
+              '<input type="number" id="pCount" min="' + MIN_Q + '" max="100" value="20"></label>' +
           "</div>" +
           '<div class="btn-row mt-2">' +
             '<button class="btn btn-primary" id="copyPrompt" type="button">요청문 복사</button>' +
@@ -96,29 +107,42 @@ App.register("import", {
 "선속계\n" +
 "음향측심기\n" +
 "&gt; 자이로컴퍼스는 진북을, 마그네틱컴퍼스는 자북을 지시한다.\n" +
+"출처: 항해학_기초.pdf · 3. 항해 계기\n" +
 "\n" +
 "OX | 해사법규 | 항법 | 하\n" +
 "추월하는 선박이 피항한다.\n" +
 "정답: O\n" +
+"해설: 추월선이 진로를 피해야 한다.\n" +
+"출처: 해사법규_요약.pdf · 2. 항법\n" +
 "\n" +
 "플래시카드 | 항해학 | 방위와 침로 | 하\n" +
 "편차\n" +
 "정답: 진북과 자북의 차이\n" +
+"해설: 장소와 연도에 따라 값이 달라진다.\n" +
+"출처: 항해학_기초.pdf · 2. 방위와 침로\n" +
 "\n" +
 "단답 | 선박기관 | 주요 보조 계통 | 중\n" +
 "청수를 다시 냉각하는 것은?\n" +
 "정답: 해수\n" +
 "허용: 바닷물, sea water\n" +
+"해설: 청수 냉각기에서 해수와 열을 주고받는다.\n" +
+"출처: 선박기관_기초.pdf · 3. 주요 보조 계통\n" +
 "\n" +
 "서술형 | 항해학 | 항로 계획 | 상\n" +
 "항로 계획 네 단계를 서술하시오.\n" +
 "정답: 평가, 계획, 실행, 감시 순으로 진행한다.\n" +
-"키워드: 평가, 계획, 실행, 감시" +
+"키워드: 평가, 계획, 실행, 감시\n" +
+"해설: 순서와 각 단계에서 하는 일을 함께 써야 한다.\n" +
+"출처: 항해학_기초.pdf · 6. 항로 계획" +
         "</span>" +
         '<div class="small mt-1">' +
           "첫 줄은 <strong>유형 | 과목 | 단원 | 난이도</strong>. 난이도는 하·중·상.<br>" +
-          "4지선다는 정답 보기 앞에 <strong>*</strong>. 해설은 <strong>&gt;</strong> 로 시작.<br>" +
-          "나머지 유형은 <strong>정답:</strong> 줄에 답을 씁니다." +
+          "4지선다는 정답 보기 앞에 <strong>*</strong>. 해설은 <strong>&gt;</strong> 또는 " +
+          "<strong>해설:</strong> 줄.<br>" +
+          "나머지 유형은 <strong>정답:</strong> 줄에 답을 씁니다.<br>" +
+          "<strong>해설은 모든 문제에 있어야 합니다.</strong> 없으면 건너뜁니다.<br>" +
+          "<strong>출처:</strong> 줄에 어느 자료 어디에서 나왔는지 적습니다. " +
+          "자료에서 못 찾았으면 지어내지 말고 <strong>출처: 자료에 없음</strong> 이라고 쓰세요." +
         "</div>" +
       "</div>";
     }
@@ -144,6 +168,26 @@ App.register("import", {
         return html;
       }
 
+      /* 한 번에 최소 10문제. 모자라면 막지는 않고, 자료를 더 넣고
+         다시 받아 오라고 알려 준다. */
+      if (r.ok.length < MIN_Q) {
+        html += '<div class="card"><div class="callout callout-warn">' +
+          "<strong>" + r.ok.length + "개뿐입니다. 한 번에 " + MIN_Q + "개 이상을 권합니다.</strong><br>" +
+          "자료를 더 붙여서 다시 받아 오거나, 위 요청문의 문제 수를 올려 보세요.<br>" +
+          "그대로 추가해도 됩니다 — 자료에 없는 내용을 억지로 채우는 것보다 낫습니다." +
+        "</div></div>";
+      }
+
+      /* 자료에서 근거를 찾지 못한 문제는 미리 세어서 알려 준다 */
+      var noSrc = r.ok.filter(function (q) { return lacksSource(q); }).length;
+      if (noSrc) {
+        html += '<div class="card"><div class="callout callout-warn">' +
+          "<strong>출처가 없는 문제 " + noSrc + "개</strong><br>" +
+          "자료에서 근거를 찾지 못한 문제입니다. 넣어도 되지만 화면에 " +
+          "<strong>자료에 없음</strong> 이라고 표시되니, 교재로 직접 확인하세요." +
+        "</div></div>";
+      }
+
       html += '<div class="card"><div class="list">' +
         r.ok.map(function (q, i) {
           var warn = !Store.findSubject(q.subject) ||
@@ -153,11 +197,17 @@ App.register("import", {
               '<div class="row-title">' + (i + 1) + ". " + App.esc(QuizEngine.trim(q.prompt, 68)) + "</div>" +
               '<div class="row-sub">' + App.esc(q.subject) + " · " + App.esc(q.unit) +
                 " · " + App.TYPE_LABEL[q.type] + " · 난이도 " + App.DIFF_LABEL[q.difficulty] + "</div>" +
+              '<div class="row-sub' + (lacksSource(q) ? " no-source" : "") + '">출처: ' +
+                App.esc(lacksSource(q) ? App.NO_SOURCE : q.source) + "</div>" +
             "</div>" +
             '<div class="row-side">' +
+              (lacksSource(q)
+                ? '<span class="badge badge-warn" title="자료에서 근거를 찾지 못한 문제입니다.">출처 없음</span>'
+                : "") +
               (warn
                 ? '<span class="badge badge-warn" title="목록에 없는 과목·단원입니다. 추가는 되지만 단원별 통계에서 빠집니다.">목록에 없음</span>'
-                : '<span class="badge badge-ok">확인</span>') +
+                : "") +
+              (!warn && !lacksSource(q) ? '<span class="badge badge-ok">확인</span>' : "") +
             "</div>" +
           "</div>";
         }).join("") +
@@ -185,6 +235,13 @@ App.register("import", {
       return html;
     }
 
+    /* 자료에서 근거를 찾지 못한 문제인가.
+       빈 칸이든 "자료에 없음" 이든 똑같이 다룬다. */
+    function lacksSource(q) {
+      var s = String((q && q.source) || "").trim();
+      return !s || s === App.NO_SOURCE || s === "없음";
+    }
+
     function missingUnits(list) {
       var seen = {}, out = [];
       list.forEach(function (q) {
@@ -201,12 +258,29 @@ App.register("import", {
 
     function buildPrompt() {
       var subject = App.$("#pSubject", mount).value;
-      var n = Math.max(1, Number(App.$("#pCount", mount).value) || 20);
+      var n = Math.max(MIN_Q, Number(App.$("#pCount", mount).value) || 20);
       var CUR = Store.curriculum();
       var list = subject ? CUR.filter(function (c) { return c.name === subject; }) : CUR;
 
       return [
-        "첨부한 자료(PDF·필기)를 읽고 시험 대비 문제 " + n + "개를 만들어 줘.",
+        "첨부한 자료(PDF·필기)만 읽고 시험 대비 문제 " + n + "개를 만들어 줘.",
+        "최소 " + MIN_Q + "개는 반드시 채워야 해.",
+        "",
+        "■ 가장 중요한 규칙 — 자료 밖의 내용을 쓰지 마",
+        "1. 첨부한 자료에 적혀 있는 것만으로 문제를 만들어 줘.",
+        "   네가 따로 알고 있는 지식, 인터넷에서 찾은 것, 일반 상식을 보태지 마.",
+        "2. 자료에 근거가 없으면 지어내지 마. 그럴듯하게 채우는 것이 제일 나쁜 경우야.",
+        "3. 자료에서 근거를 찾지 못했으면 그 자리에 정확히 이렇게 적어 줘: 자료에 없음",
+        "   (source 나 explain 에 \"자료에 없음\" 이라고 쓰면 돼. 빈 칸으로 두지 마.)",
+        "4. 자료가 짧아서 " + n + "개를 못 채우겠으면, 억지로 만들어 채우지 말고",
+        "   만들 수 있는 만큼만 주고 맨 끝에 몇 개밖에 못 만든 이유를 한 줄로 적어 줘.",
+        "",
+        "■ 모든 문제에 반드시 있어야 하는 것",
+        "- answer  (정답)",
+        "- explain (해설) — 한 문제도 빠짐없이. 빈 문자열로 두면 안 돼.",
+        "- source  (출처) — 이 문제가 자료의 어디에서 나왔는지.",
+        "  서식은 \"파일이름 · 항목\" 으로. 쪽수를 알면 쪽수까지.",
+        "  예: \"항해학_기초.pdf · 2. 방위와 침로\"  /  \"필기노트.pdf · 12쪽\"",
         "",
         "■ 과목과 단원은 아래 목록에서만 골라서 정확히 그대로 써 줘.",
         list.map(function (c) {
@@ -219,6 +293,7 @@ App.register("import", {
         "■ id 는 서로 겹치지 않게 만들어 줘.",
         "■ mcq 해설에 \"1번은~\" 처럼 보기 번호를 쓰지 마. 보기 순서가 매번 섞여서 어긋나.",
         "   번호 대신 보기 내용을 그대로 인용해 줘.",
+        "■ mcq 의 오답 보기도 자료 안에 나오는 말로 만들어 줘. 없는 용어를 지어내지 마.",
         "",
         "■ 결과는 다른 말 없이 JSON 배열 하나로만 줘. 형식은 이렇게:",
         "",
@@ -228,28 +303,36 @@ App.register("import", {
         '    "prompt": "진북을 지시하는 계기는?",',
         '    "choices": ["자이로컴퍼스", "마그네틱컴퍼스", "선속계", "음향측심기"],',
         '    "answer": 0,',
-        '    "explain": "자이로컴퍼스는 진북을, 마그네틱컴퍼스는 자북을 지시한다." },',
+        '    "explain": "자이로컴퍼스는 진북을, 마그네틱컴퍼스는 자북을 지시한다.",',
+        '    "source": "항해학_기초.pdf · 3. 항해 계기" },',
         "",
         '  { "id": "law-101", "subject": "해사법규", "unit": "항법",',
         '    "type": "ox", "difficulty": 1,',
         '    "prompt": "추월하는 선박이 피항한다.",',
-        '    "answer": true, "explain": "..." },',
+        '    "answer": true,',
+        '    "explain": "추월선은 추월당하는 선박의 진로를 피해야 한다.",',
+        '    "source": "해사법규_요약.pdf · 2. 항법" },',
         "",
         '  { "id": "nav-102", "subject": "항해학", "unit": "방위와 침로",',
         '    "type": "flash", "difficulty": 1,',
-        '    "prompt": "편차", "answer": "진북과 자북의 차이", "explain": "" },',
+        '    "prompt": "편차", "answer": "진북과 자북의 차이",',
+        '    "explain": "장소와 연도에 따라 값이 달라진다.",',
+        '    "source": "항해학_기초.pdf · 2. 방위와 침로" },',
         "",
         '  { "id": "eng-101", "subject": "선박기관", "unit": "주요 보조 계통",',
         '    "type": "short", "difficulty": 2,',
         '    "prompt": "청수를 다시 냉각하는 것은?",',
-        '    "answer": "해수", "altAnswers": ["바닷물"], "explain": "..." },',
+        '    "answer": "해수", "altAnswers": ["바닷물"],',
+        '    "explain": "청수 냉각기에서 해수와 열을 주고받는다.",',
+        '    "source": "선박기관_기초.pdf · 3. 주요 보조 계통" },',
         "",
         '  { "id": "nav-103", "subject": "항해학", "unit": "항로 계획",',
         '    "type": "essay", "difficulty": 3,',
         '    "prompt": "항로 계획 네 단계를 서술하시오.",',
         '    "answer": "평가, 계획, 실행, 감시 순으로 진행한다. ...",',
         '    "keywords": ["평가", "계획", "실행", "감시"],',
-        '    "explain": "..." }',
+        '    "explain": "네 단계의 순서와 각 단계에서 하는 일을 함께 써야 한다.",',
+        '    "source": "항해학_기초.pdf · 6. 항로 계획" }',
         "]"
       ].join("\n");
     }
@@ -288,7 +371,7 @@ App.register("import", {
           subject: head[1], unit: head[2],
           type: type,
           difficulty: DIFF_ALIAS[head[3]] || 2,
-          prompt: "", explain: ""
+          prompt: "", explain: "", source: ""
         };
 
         var body = lines.slice(1);
@@ -301,6 +384,13 @@ App.register("import", {
           var choices = [], answer = -1;
           rest.forEach(function (l) {
             if (l.indexOf(">") === 0) { q.explain = l.slice(1).trim(); return; }
+            /* '해설:' '출처:' 줄은 보기가 아니다 */
+            var lab = l.match(/^(해설|출처)\s*[:：]\s*(.*)$/);
+            if (lab) {
+              if (lab[1] === "해설") q.explain = lab[2].trim();
+              else q.source = lab[2].trim();
+              return;
+            }
             var star = l.indexOf("*") === 0;
             var t = (star ? l.slice(1) : l).replace(/^\d+[.)]\s*/, "").trim();
             if (!t) return;
@@ -317,12 +407,13 @@ App.register("import", {
         } else {
           rest.forEach(function (l) {
             if (l.indexOf(">") === 0) { q.explain = l.slice(1).trim(); return; }
-            var m = l.match(/^(정답|답|허용|키워드|해설)\s*[:：]\s*(.*)$/);
+            var m = l.match(/^(정답|답|허용|키워드|해설|출처)\s*[:：]\s*(.*)$/);
             if (!m) return;
             var v = m[2].trim();
             if (m[1] === "정답" || m[1] === "답") q.answer = v;
             else if (m[1] === "허용") q.altAnswers = splitList(v);
             else if (m[1] === "키워드") q.keywords = splitList(v);
+            else if (m[1] === "출처") q.source = v;
             else q.explain = v;
           });
 
@@ -335,6 +426,11 @@ App.register("import", {
             bad.push({ where: where, why: "'정답:' 줄이 없습니다" });
             return;
           }
+        }
+
+        if (!q.explain) {
+          bad.push({ where: where, why: "해설이 없습니다 ('>' 줄 또는 '해설:' 줄)" });
+          return;
         }
 
         ok.push(q);
@@ -384,8 +480,16 @@ App.register("import", {
           type: type,
           difficulty: [1, 2, 3].indexOf(Number(q.difficulty)) >= 0 ? Number(q.difficulty) : 2,
           prompt: String(q.prompt),
-          explain: q.explain ? String(q.explain) : ""
+          explain: String(q.explain || "").trim(),
+          source: String(q.source || "").trim()
         };
+
+        /* 해설은 모든 문제에 있어야 한다. 없는 채로 들이면
+           나중에 왜 그게 답인지 알 수 없는 문제만 쌓인다. */
+        if (!out.explain) {
+          bad.push({ where: where, why: "explain (해설) 이 없습니다" });
+          return;
+        }
 
         if (type === "mcq") {
           if (!Array.isArray(q.choices) || q.choices.length !== 4) {

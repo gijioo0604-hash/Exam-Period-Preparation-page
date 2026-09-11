@@ -40,6 +40,37 @@ var App = (function () {
   function $(sel, root) { return (root || document).querySelector(sel); }
   function $$(sel, root) { return Array.prototype.slice.call((root || document).querySelectorAll(sel)); }
 
+  /* ---------- 해설 + 출처 ----------
+     문제를 푼 뒤 보여 주는 해설 한 덩어리를 여기서만 만든다.
+     화면마다 따로 만들면 어디는 출처가 나오고 어디는 안 나오게 되므로,
+     문제 풀기 · 오답노트 · 약점 보완이 모두 이 함수를 쓴다.
+
+     해설이나 출처가 비어 있으면 그럴듯하게 채우지 않는다.
+     "자료에 없음" 이라고 그대로 띄워서, 자료로 확인된 문제가 아니라는 것을
+     푸는 사람이 알 수 있게 한다. */
+
+  var NO_SOURCE = "자료에 없음";
+
+  function lacks(s) {
+    s = String(s === undefined || s === null ? "" : s).trim();
+    return !s || s === NO_SOURCE || s === "없음";
+  }
+
+  function explainHtml(q) {
+    q = q || {};
+
+    var body = lacks(q.explain)
+      ? '<span class="no-source">자료에 없음</span> — 이 문제의 해설이 자료에서 확인되지 않았습니다.'
+      : esc(q.explain).replace(/\n/g, "<br>");
+
+    var foot = lacks(q.source)
+      ? '<div class="src no-source">출처: 자료에 없음 — 자료에서 근거를 찾지 못한 문제입니다. ' +
+        '교재로 직접 확인하세요.</div>'
+      : '<div class="src">출처: ' + esc(q.source) + "</div>";
+
+    return '<div class="explain">' + body + foot + "</div>";
+  }
+
   /* 이벤트 위임.
      화면은 같은 컨테이너에 몇 번이고 다시 그려지기 때문에, 그때마다
      addEventListener 를 부르면 핸들러가 쌓여 한 번의 클릭이 여러 번
@@ -370,6 +401,7 @@ var App = (function () {
     register: register, start: start, go: go, render: render,
     refreshChrome: refreshChrome,
 
+    explainHtml: explainHtml, NO_SOURCE: NO_SOURCE,
     esc: esc, $: $, $$: $$, on: on, onChange: onChange, onBlur: onBlur, toast: toast,
 
     TYPE_LABEL: TYPE_LABEL, TYPE_ORDER: TYPE_ORDER,

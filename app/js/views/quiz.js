@@ -301,7 +301,7 @@ var QuizEngine = (function () {
     var html =
       '<div class="verdict ' + (correct ? "verdict-ok" : "verdict-bad") + '">' + label + "</div>" +
       (extraHtml || "") +
-      (q.explain ? '<div class="explain">' + App.esc(q.explain) + "</div>" : "") +
+      App.explainHtml(q) +
       '<div class="btn-row mt-2">' +
         '<button class="btn btn-primary" id="nextBtn" type="button">' +
         (S.i + 1 < S.questions.length ? "다음 문제" : "결과 보기") + "</button>" +

@@ -13,6 +13,26 @@
    subject / unit 은 data/curriculum.js 의 이름과 정확히 일치시키세요.
    id 는 중복되면 안 됩니다.
 
+   ------------------------------------------------------------
+   문제를 만들 때 반드시 지킬 것
+
+   1. answer  (정답)  — 모든 문제에 있어야 합니다.
+   2. explain (해설)  — 모든 문제에 있어야 합니다. 비워 두지 마세요.
+   3. source  (출처)  — 어느 자료의 어느 항목에서 나왔는지 적습니다.
+                        서식: "파일이름 · 항목"
+                        예:   "항해학_기초.md · 2. 방위와 침로"
+                        화면에서 해설 끝에 "출처: ..." 로 붙습니다.
+
+   4. 자료에 없는 내용으로는 문제를 만들지 않습니다.
+      아는 것을 보태서 쓰지 말고, 자료에 적힌 것만 씁니다.
+
+   5. 자료에서 근거를 찾지 못했으면 지어내지 말고 그대로 적습니다.
+        source:  "자료에 없음"
+        explain: "자료에 없음" 으로 시작하게 쓰기
+      화면에서 "자료에 없음" 은 눈에 띄게 표시되어,
+      이 문제는 자료로 확인된 것이 아니라는 것을 알 수 있습니다.
+
+   ------------------------------------------------------------
    주의: 4지선다는 보기 순서를 매번 섞어서 냅니다.
         해설에 "1번은 ~" 처럼 번호를 쓰면 화면과 어긋납니다.
         번호 대신 보기 내용을 그대로 써 주세요.
@@ -25,6 +45,7 @@ var QUESTION_BANK = [
   {
     id: "nav-001",
     subject: "항해학", unit: "항법의 종류",
+    source: "항해학_기초.md · 1. 항법의 종류",
     type: "mcq", difficulty: 1,
     prompt: "천체의 고도를 측정해 위치선을 얻는 항법은 무엇인가?",
     choices: ["지문항법", "천문항법", "전파항법", "추측항법"],
@@ -34,6 +55,7 @@ var QUESTION_BANK = [
   {
     id: "nav-002",
     subject: "항해학", unit: "방위와 침로",
+    source: "항해학_기초.md · 2. 방위와 침로",
     type: "mcq", difficulty: 2,
     prompt: "진방위를 구하는 관계식으로 옳은 것은?",
     choices: [
@@ -48,6 +70,7 @@ var QUESTION_BANK = [
   {
     id: "nav-003",
     subject: "항해학", unit: "조석과 조류",
+    source: "항해학_기초.md · 4. 조석과 조류",
     type: "ox", difficulty: 1,
     prompt: "대조는 상현·하현 무렵에 조차가 가장 커지는 때를 말한다.",
     answer: false,
@@ -56,22 +79,25 @@ var QUESTION_BANK = [
   {
     id: "nav-004",
     subject: "항해학", unit: "방위와 침로",
+    source: "항해학_기초.md · 2. 방위와 침로",
     type: "flash", difficulty: 1,
     prompt: "편차 (偏差)",
     answer: "진북과 자북의 차이.\n장소와 연도에 따라 달라진다.",
-    explain: ""
+    explain: "편차는 진북과 자북이 이루는 각이다. 배가 어디에 있느냐, 언제 재느냐에 따라 값이 달라진다. 배 자체 때문에 생기는 자차와는 원인이 다르다."
   },
   {
     id: "nav-005",
     subject: "항해학", unit: "방위와 침로",
+    source: "항해학_기초.md · 2. 방위와 침로",
     type: "flash", difficulty: 2,
     prompt: "자차 (自差)",
     answer: "선체의 철재와 전기 장비가 자침에 주는 영향.\n선수 방향에 따라 값이 달라진다.",
-    explain: ""
+    explain: "자차는 선체의 철재와 전기 장비가 자침을 끌어당겨 생기는 오차다. 선수를 어느 쪽으로 두느냐에 따라 값이 달라지므로, 장소와 연도에 따라 달라지는 편차와 구분해서 외운다."
   },
   {
     id: "nav-006",
     subject: "항해학", unit: "항법의 종류",
+    source: "항해학_기초.md · 1. 항법의 종류",
     type: "short", difficulty: 2,
     prompt: "추측 위치는 조류와 바람의 영향으로 실제 위치와 차이가 생긴다. 이 차이를 무엇이라 하는가?",
     answer: "편류",
@@ -81,6 +107,7 @@ var QUESTION_BANK = [
   {
     id: "nav-007",
     subject: "항해학", unit: "등화와 형상물",
+    source: "항해학_기초.md · 5. 등화와 형상물",
     type: "mcq", difficulty: 2,
     prompt: "붉은색 전주등 3개를 수직으로 표시한 선박은?",
     choices: ["조종불능선", "조종제한선", "흘수제약선", "어로 종사선"],
@@ -90,6 +117,7 @@ var QUESTION_BANK = [
   {
     id: "nav-008",
     subject: "항해학", unit: "항해 계기",
+    source: "항해학_기초.md · 3. 항해 계기",
     type: "ox", difficulty: 2,
     prompt: "음향측심기로 측정한 값을 쓸 때는 흘수 보정 여부를 확인해야 한다.",
     answer: true,
@@ -98,6 +126,7 @@ var QUESTION_BANK = [
   {
     id: "nav-009",
     subject: "항해학", unit: "항해 계기",
+    source: "항해학_기초.md · 3. 항해 계기",
     type: "mcq", difficulty: 3,
     prompt: "레이더 화면을 볼 때 반드시 구분해서 확인해야 하는 표시 방식은?",
     choices: [
@@ -112,6 +141,7 @@ var QUESTION_BANK = [
   {
     id: "nav-010",
     subject: "항해학", unit: "항로 계획",
+    source: "항해학_기초.md · 6. 항로 계획 네 단계",
     type: "essay", difficulty: 3,
     prompt: "항로 계획의 네 단계를 순서대로 쓰고, 각 단계에서 하는 일을 간단히 서술하시오.",
     answer: "1) 평가: 해도와 수로지, 기상 자료를 모아 항로 후보를 검토한다.\n2) 계획: 변침점과 안전 등심선, 비상 대피 항구를 해도에 표기한다.\n3) 실행: 계획한 침로와 속력으로 항해하며 당직 체계를 운영한다.\n4) 감시: 선위를 반복 확인하고 계획과의 차이를 기록한다.",
@@ -124,6 +154,7 @@ var QUESTION_BANK = [
   {
     id: "eng-001",
     subject: "선박기관", unit: "주기관의 종류",
+    source: "선박기관_기초.md · 1. 주기관의 종류",
     type: "mcq", difficulty: 1,
     prompt: "열효율이 높고 직결 추진이 가능해 대형 상선에 주로 쓰이는 주기관은?",
     choices: ["저속 2행정 디젤기관", "중속 4행정 디젤기관", "가스터빈", "이중연료기관"],
@@ -133,14 +164,16 @@ var QUESTION_BANK = [
   {
     id: "eng-002",
     subject: "선박기관", unit: "디젤기관의 행정",
+    source: "선박기관_기초.md · 2. 디젤기관의 4행정",
     type: "flash", difficulty: 1,
     prompt: "디젤기관 4행정의 순서",
     answer: "흡입 → 압축 → 폭발 → 배기",
-    explain: ""
+    explain: "흡입으로 공기를 들이고, 압축으로 공기 온도를 높이고, 연료를 분사해 스스로 불붙는 것이 폭발, 남은 연소가스를 내보내는 것이 배기다. 순서가 바뀌면 압축 없이 연료가 들어가 자연발화가 일어나지 않는다."
   },
   {
     id: "eng-003",
     subject: "선박기관", unit: "디젤기관의 행정",
+    source: "선박기관_기초.md · 2. 디젤기관의 4행정",
     type: "ox", difficulty: 1,
     prompt: "2행정 기관은 크랭크축 2회전에 한 사이클을 완성한다.",
     answer: false,
@@ -149,6 +182,7 @@ var QUESTION_BANK = [
   {
     id: "eng-004",
     subject: "선박기관", unit: "주요 보조 계통",
+    source: "선박기관_기초.md · 3. 주요 보조 계통",
     type: "short", difficulty: 2,
     prompt: "냉각수 계통에서 청수는 기관을 직접 냉각한다. 그렇다면 이 청수를 다시 냉각하는 것은 무엇인가?",
     answer: "해수",
@@ -158,6 +192,7 @@ var QUESTION_BANK = [
   {
     id: "eng-005",
     subject: "선박기관", unit: "주요 보조 계통",
+    source: "선박기관_기초.md · 3. 주요 보조 계통",
     type: "short", difficulty: 1,
     prompt: "압축공기를 실린더에 공급해 기관을 기동하는 계통의 이름은?",
     answer: "시동공기 계통",
@@ -167,6 +202,7 @@ var QUESTION_BANK = [
   {
     id: "eng-006",
     subject: "선박기관", unit: "친환경 연료",
+    source: "선박기관_기초.md · 4. 친환경 연료 전환 동향",
     type: "mcq", difficulty: 2,
     prompt: "연소 시 이산화탄소가 나오지 않지만 독성과 연소 안정성이 과제로 남아 있는 연료는?",
     choices: ["액화천연가스", "메탄올", "암모니아", "수소"],
@@ -176,6 +212,7 @@ var QUESTION_BANK = [
   {
     id: "eng-007",
     subject: "선박기관", unit: "친환경 연료",
+    source: "선박기관_기초.md · 4. 친환경 연료 전환 동향",
     type: "mcq", difficulty: 2,
     prompt: "메탄올을 선박 연료로 쓸 때의 주된 과제는?",
     choices: [
@@ -190,14 +227,16 @@ var QUESTION_BANK = [
   {
     id: "eng-008",
     subject: "선박기관", unit: "주요 보조 계통",
+    source: "선박기관_기초.md · 3. 주요 보조 계통",
     type: "flash", difficulty: 2,
     prompt: "윤활유 계통의 네 가지 역할",
     answer: "마찰 저감 · 냉각 · 밀봉 · 세정",
-    explain: ""
+    explain: "마찰 저감은 금속끼리 닿지 않게 기름막을 만드는 것, 냉각은 마찰열을 실어 나르는 것, 밀봉은 피스톤과 실린더 사이 틈을 메우는 것, 세정은 생긴 찌꺼기를 씻어 내는 것이다. 네 가지를 윤활유 계통 하나가 함께 맡는다."
   },
   {
     id: "eng-009",
     subject: "선박기관", unit: "당직과 점검",
+    source: "선박기관_기초.md · 5. 당직과 점검",
     type: "ox", difficulty: 2,
     prompt: "이상음, 진동, 누유는 계기 수치가 변하기 전에 먼저 나타나는 신호다.",
     answer: true,
@@ -206,6 +245,7 @@ var QUESTION_BANK = [
   {
     id: "eng-010",
     subject: "선박기관", unit: "당직과 점검",
+    source: "선박기관_기초.md · 5. 당직과 점검",
     type: "essay", difficulty: 3,
     prompt: "기관 당직 인수인계와 상태 점검에서 지켜야 할 사항을 서술하시오.",
     answer: "인수인계 시 기관의 현재 상태와 미해결 사항을 반드시 기록으로 넘긴다. 온도와 압력은 단순히 정상 범위 안에 있는지만 보지 않고, 이전 값과 비교해 추세를 함께 확인한다. 이상음·진동·누유는 계기 수치보다 먼저 나타나는 신호이므로 감각으로 잡히는 변화를 놓치지 않는다.",
@@ -218,6 +258,7 @@ var QUESTION_BANK = [
   {
     id: "law-001",
     subject: "해사법규", unit: "항법",
+    source: "해사법규_요약.md · 2. 항법 요약",
     type: "mcq", difficulty: 1,
     prompt: "두 동력선이 마주치는 상태일 때 취해야 할 조치는?",
     choices: [
@@ -232,6 +273,7 @@ var QUESTION_BANK = [
   {
     id: "law-002",
     subject: "해사법규", unit: "항법",
+    source: "해사법규_요약.md · 2. 항법 요약",
     type: "mcq", difficulty: 2,
     prompt: "두 동력선이 횡단하는 상태일 때 피항선은?",
     choices: [
@@ -246,6 +288,7 @@ var QUESTION_BANK = [
   {
     id: "law-003",
     subject: "해사법규", unit: "해상교통안전 일반",
+    source: "해사법규_요약.md · 1. 해상교통안전 일반",
     type: "ox", difficulty: 1,
     prompt: "충돌 위험 여부가 분명하지 않을 때는 위험이 없다고 보고 항행을 계속한다.",
     answer: false,
@@ -254,6 +297,7 @@ var QUESTION_BANK = [
   {
     id: "law-004",
     subject: "해사법규", unit: "선박의 우선 관계",
+    source: "해사법규_요약.md · 3. 선박의 우선 관계",
     type: "short", difficulty: 2,
     prompt: "선박의 우선 관계에서 가장 먼저 오는(가장 우선하는) 선박은?",
     answer: "조종불능선",
@@ -263,6 +307,7 @@ var QUESTION_BANK = [
   {
     id: "law-005",
     subject: "해사법규", unit: "선박의 우선 관계",
+    source: "해사법규_요약.md · 3. 선박의 우선 관계",
     type: "mcq", difficulty: 3,
     prompt: "선박의 우선 관계를 우선하는 순서대로 바르게 나열한 것은?",
     choices: [
@@ -277,14 +322,16 @@ var QUESTION_BANK = [
   {
     id: "law-006",
     subject: "해사법규", unit: "해상교통안전 일반",
+    source: "해사법규_요약.md · 1. 해상교통안전 일반",
     type: "flash", difficulty: 1,
     prompt: "안전속력이란?",
     answer: "충돌을 피하기 위해 적절한 조치를 취할 수 있는 속력.\n\n고려 요소: 시계, 교통량, 조종 성능,\n야간 배경광, 바람과 조류, 레이더 성능",
-    explain: ""
+    explain: "안전속력은 몇 노트라고 정해 둔 값이 아니라 그때그때 상황에 따라 달라지는 속력이다. 시계·교통량·조종 성능·야간 배경광·바람과 조류·레이더 성능을 함께 따져서 정한다."
   },
   {
     id: "law-007",
     subject: "해사법규", unit: "항법",
+    source: "해사법규_요약.md · 2. 항법 요약",
     type: "ox", difficulty: 2,
     prompt: "추월당하는 선박은 침로와 속력을 유지해야 한다.",
     answer: true,
@@ -293,6 +340,7 @@ var QUESTION_BANK = [
   {
     id: "law-008",
     subject: "해사법규", unit: "해양환경 관리",
+    source: "해사법규_요약.md · 5. 해양환경 관리",
     type: "mcq", difficulty: 2,
     prompt: "선박에서 나오는 폐기물 중 배출이 전면 금지된 것은?",
     choices: ["음식물 찌꺼기", "플라스틱", "종이류", "목재"],
@@ -302,6 +350,7 @@ var QUESTION_BANK = [
   {
     id: "law-009",
     subject: "해사법규", unit: "선박 안전 관리",
+    source: "해사법규_요약.md · 4. 선박 안전 관리",
     type: "short", difficulty: 1,
     prompt: "화물을 실을 수 있는 한계를 선체에 표시한 것으로, 계절과 해역에 따라 다르게 적용되는 것은?",
     answer: "만재흘수선",
@@ -311,6 +360,7 @@ var QUESTION_BANK = [
   {
     id: "law-010",
     subject: "해사법규", unit: "사고 시 조치",
+    source: "해사법규_요약.md · 6. 사고 발생 시 조치 순서",
     type: "essay", difficulty: 3,
     prompt: "해양사고가 발생했을 때의 조치 순서를 5단계로 나누어 서술하시오.",
     answer: "1) 인명 안전 확보와 인원 점검\n2) 추가 피해 방지 조치와 응급 조치\n3) 관계 기관 신고와 상황 보고\n4) 기록 작성과 증거 보전\n5) 원인 조사와 재발 방지 대책 수립",

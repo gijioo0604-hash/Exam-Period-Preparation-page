@@ -19,7 +19,7 @@ App.register("editor", {
         id: null, subject: first.name, unit: first.units[0] || "",
         type: "mcq", difficulty: 2, prompt: "",
         choices: ["", "", "", ""], answer: 0,
-        altAnswers: [], keywords: [], explain: ""
+        altAnswers: [], keywords: [], explain: "", source: ""
       };
     }
 
@@ -148,9 +148,18 @@ App.register("editor", {
 
         '<div id="typeFields">' + typeFields(v) + "</div>" +
 
-        '<label class="field mt-2">해설 <span class="opt">(선택)</span>' +
+        '<label class="field mt-2">해설' +
           '<textarea id="fExplain" rows="3" placeholder="왜 그 답인지, 헷갈리는 선택지는 무엇인지">' +
           App.esc(v.explain || "") + "</textarea></label>" +
+
+        '<label class="field mt-2">출처 — 어느 자료 어디에서 나왔는지' +
+          '<input id="fSource" value="' + App.esc(v.source || "") +
+            '" placeholder="예: 항해학_기초.pdf · 2. 방위와 침로">' +
+          "</label>" +
+        '<p class="small muted mt-0">' +
+          "해설 끝에 붙어서 나옵니다. 자료에서 근거를 찾지 못했으면 지어내지 말고 " +
+          '<strong>자료에 없음</strong> 이라고 쓰세요. 화면에 그대로 표시됩니다.' +
+        "</p>" +
 
         '<div class="btn-row mt-2">' +
           '<button class="btn btn-primary" id="saveBtn" type="button">' +
@@ -241,6 +250,7 @@ App.register("editor", {
         if (q.altAnswers && q.altAnswers.length) o.altAnswers = q.altAnswers;
         if (q.keywords && q.keywords.length) o.keywords = q.keywords;
         o.explain = q.explain || "";
+        o.source = q.source || "";
         return "  " + JSON.stringify(o, null, 2).split("\n").join("\n  ") + ",";
       }).join("\n\n");
     }
@@ -256,7 +266,8 @@ App.register("editor", {
         type: t,
         difficulty: Number(App.$("#fDiff", mount).value),
         prompt: App.$("#fPrompt", mount).value.trim(),
-        explain: App.$("#fExplain", mount).value.trim()
+        explain: App.$("#fExplain", mount).value.trim(),
+        source: App.$("#fSource", mount).value.trim()
       };
 
       if (t === "mcq") {
@@ -292,6 +303,16 @@ App.register("editor", {
       } else if (!q.answer) {
         return q.type === "flash" ? "카드 뒷면을 입력하세요." : "정답을 입력하세요.";
       }
+
+      /* 정답만 있고 해설이 없으면, 나중에 왜 그게 답인지 알 수 없는
+         문제만 쌓인다. 그래서 해설은 반드시 받는다. */
+      if (!q.explain) return "해설을 입력하세요. 모든 문제에 해설이 있어야 합니다.";
+
+      /* 출처는 비워 두는 대신 "자료에 없음" 이라고 적게 한다.
+         빈 칸은 '아직 안 썼다' 와 '자료에 없다' 가 구분되지 않는다. */
+      if (!q.source) {
+        return "출처를 입력하세요. 자료에서 못 찾았으면 '자료에 없음' 이라고 쓰세요.";
+      }
       return null;
     }
 
@@ -317,6 +338,7 @@ App.register("editor", {
           difficulty: Number(App.$("#fDiff", mount).value),
           prompt: App.$("#fPrompt", mount).value,
           explain: App.$("#fExplain", mount).value,
+          source: App.$("#fSource", mount).value,
           choices: ["", "", "", ""],
           answer: t === "ox" ? null : "",
           altAnswers: [], keywords: []

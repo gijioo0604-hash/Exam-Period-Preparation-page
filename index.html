@@ -426,6 +426,19 @@ footer a { color: var(--text-mid); }
       계정도 필요 없습니다.
     </div>
 
+    <div class="note note-ok">
+      <strong>인터넷에서 아무것도 받아오지 않습니다.</strong>
+      글꼴도 라이브러리도 분석 도구도 없이, 이 사이트 안의 파일만 씁니다.
+      그래서 인터넷이 끊겨도 열리고, 문제 · 해설 · 출처 모두 파일 안에 들어 있습니다.
+      구글 캘린더 연동과 로그인만 예외인데, 직접 버튼을 눌러 켜야 그때 연결합니다.
+    </div>
+
+    <div class="note note-ok">
+      <strong>모든 문제에 정답 · 해설 · 출처가 있습니다.</strong>
+      해설 끝에 어느 자료 어디에서 나온 내용인지 붙습니다.
+      자료에서 근거를 찾지 못한 문제는 지어내지 않고 <b>자료에 없음</b> 이라고 표시합니다.
+    </div>
+
     <div class="note">
       <strong>기기마다 기록이 따로입니다.</strong>
       노트북에서 푼 기록이 폰에는 보이지 않습니다.
@@ -456,7 +469,7 @@ footer a { color: var(--text-mid); }
 
 <div id="toast" hidden></div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="qr.js?v=13"></script>
 <script>
 (function () {
   "use strict";
@@ -532,23 +545,14 @@ footer a { color: var(--text-mid); }
 
   /* ---------- QR ---------- */
 
+  /* QR 은 qr.js 가 이 자리에서 직접 그립니다.
+     예전에는 인터넷에서 라이브러리를 받아 썼는데, 그러면 연결이 없을 때
+     QR 이 안 나오고 "밖에서 아무것도 안 받아온다" 는 말도 거짓이 됩니다. */
   var qrBox = document.getElementById("qr");
-  if (window.QRCode) {
-    qrBox.innerHTML = "";
-    try {
-      new QRCode(qrBox, {
-        text: pageUrl,
-        width: 260,
-        height: 260,
-        colorDark: "#1a1d23",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.M
-      });
-    } catch (e) {
-      qrBox.innerHTML = '<span class="qr-fallback">QR을 만들지 못했습니다.<br>주소를 복사해 쓰세요.</span>';
-    }
-  } else {
-    qrBox.innerHTML = '<span class="qr-fallback">QR은 인터넷 연결이 필요합니다.<br>주소를 복사해 쓰세요.</span>';
+  try {
+    QR.draw(qrBox, pageUrl, { size: 300 });
+  } catch (e) {
+    qrBox.innerHTML = '<span class="qr-fallback">QR을 만들지 못했습니다.<br>주소를 복사해 쓰세요.</span>';
   }
 
   /* ---------- 앱으로 설치 ---------- */

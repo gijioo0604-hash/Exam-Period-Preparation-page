@@ -105,8 +105,8 @@ App.register("review", {
               App.esc(q.prompt) + "</div>" +
 
             (opened
-              ? '<div class="explain mt-1"><strong>정답:</strong> ' + App.esc(answerText(q)) +
-                (q.explain ? "\n\n" + App.esc(q.explain) : "") + "</div>"
+              ? '<div class="explain mt-1"><strong>정답:</strong> ' + App.esc(answerText(q)) + "</div>" +
+                App.explainHtml(q)
               : "") +
 
             '<div class="btn-row mt-2">' +
