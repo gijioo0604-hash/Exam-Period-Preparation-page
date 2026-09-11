@@ -60,7 +60,7 @@
 `fetch()` 대신 `<script src>` 로 데이터를 불러오기 때문에
 `app/index.html` 을 더블클릭해서 `file://` 로 열어도 그대로 동작합니다.
 
-자세한 사용법은 [app/README.md](app/README.md) 를 보세요.
+자세한 사용법은 [app/README.md](app/README.md), 만들어 온 과정은 [HISTORY.md](HISTORY.md) 를 보세요.
 
 ---
 
