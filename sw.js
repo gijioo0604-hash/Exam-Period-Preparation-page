@@ -7,7 +7,7 @@
    파일을 고치면 아래 CACHE 버전을 올려야 브라우저가 새로 받는다.
    ============================================================ */
 
-var CACHE = "examhub-v5";
+var CACHE = "examhub-v6";
 
 /* 스코프 기준 상대 경로 — GitHub Pages 하위 경로에서도 그대로 동작한다 */
 var ASSETS = [
@@ -68,16 +68,24 @@ self.addEventListener("fetch", function (e) {
   var url = new URL(req.url);
   if (url.origin !== self.location.origin) return;   // CDN 등 외부는 건드리지 않는다
 
+  /* HTML 은 브라우저 캐시를 건너뛰고 받는다.
+     GitHub Pages 가 HTML 에 10분짜리 캐시를 걸어 두는데, 그 사이에는
+     새로 올린 화면 대신 예전 HTML 이 나온다. 예전 HTML 은 예전 ?v= 를
+     가리키므로 고친 게 전혀 반영되지 않는다. */
+  var netReq = (req.mode === "navigate" || req.destination === "document")
+    ? new Request(req.url, { cache: "no-cache", credentials: "same-origin" })
+    : req;
+
   /* 네트워크를 먼저 보되, 안 되면 캐시로 — 새 배포를 빨리 반영하면서 오프라인도 된다 */
   e.respondWith(
-    fetch(req).then(function (res) {
+    fetch(netReq).then(function (res) {
       if (res && res.status === 200 && res.type === "basic") {
         var copy = res.clone();
         caches.open(CACHE).then(function (c) { c.put(req, copy); });
       }
       return res;
     }).catch(function () {
-      /* ignoreSearch: 페이지는 js/store.js?v=5 처럼 버전을 붙여 부르는데
+      /* ignoreSearch: 페이지는 js/store.js?v=6 처럼 버전을 붙여 부르는데
          미리 받아 둔 건 ?v= 가 없는 주소다. 쿼리를 무시하고 찾아야 맞물린다. */
       return caches.match(req, { ignoreSearch: true }).then(function (hit) {
         if (hit) return hit;
