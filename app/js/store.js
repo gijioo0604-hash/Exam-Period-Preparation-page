@@ -252,6 +252,7 @@ var Store = (function () {
   function addSubject(name, units) {
     name = String(name || "").trim();
     if (!name) return "과목 이름을 입력하세요.";
+    if (hasKeySeparator(name)) return "과목 이름에 :: 는 쓸 수 없습니다.";
     if (findSubject(name)) return "이미 있는 과목입니다.";
     var list = read("subjects");
     list.push({
@@ -271,6 +272,7 @@ var Store = (function () {
   function addUnit(subjectName, unitName) {
     unitName = String(unitName || "").trim();
     if (!unitName) return "단원 이름을 입력하세요.";
+    if (hasKeySeparator(unitName)) return "단원 이름에 :: 는 쓸 수 없습니다.";
     var c = findSubject(subjectName);
     if (!c) return "과목을 찾을 수 없습니다.";
     if (c.units.indexOf(unitName) >= 0) return "이미 있는 단원입니다.";
@@ -519,14 +521,38 @@ var Store = (function () {
      파일 자체는 저장하지 않는다. localStorage 는 5MB 남짓이라 PDF 가 들어가지 않는다.
      대신 '어디에 있는 파일인지' 경로만 기억하고, 누르면 그 파일을 연다. */
 
-  /* 사람이 적어 넣은 경로를 브라우저가 열 수 있는 형태로 바꾼다 */
+  /* 사람이 적어 넣은 경로를 브라우저가 열 수 있는 형태로 바꾼다.
+     열어도 되는 스킴만 통과시킨다. javascript: 같은 걸 그대로 링크로 걸면
+     누른 순간 코드가 돌아간다 — 남이 보낸 백업 파일을 가져오는 경우가 있어서
+     내가 친 값만 믿을 수는 없다. 막히면 "" 를 돌려준다. */
   function normalizePath(p) {
     p = String(p || "").trim().replace(/^["']|["']$/g, "");   // 따옴표 붙여 넣기 대비
     if (!p) return "";
-    if (/^(https?:|file:)/i.test(p)) return p;
-    if (/^\\\\/.test(p)) return "file:" + p.replace(/\\/g, "/");        // 네트워크 경로
-    if (/^[a-zA-Z]:[\\/]/.test(p)) return "file:///" + p.replace(/\\/g, "/");  // C:\... 형태
-    return p.replace(/\\/g, "/");                                        // 상대 경로
+
+    /* C:\... 는 스킴처럼 보이므로 먼저 걸러낸다 */
+    if (/^[a-zA-Z]:[\\/]/.test(p)) return "file:///" + p.replace(/\\/g, "/");
+    if (/^\\\\/.test(p)) return "file:" + p.replace(/\\/g, "/");   // 네트워크 경로
+
+    var scheme = p.match(/^([a-zA-Z][a-zA-Z0-9+.\-]*):/);
+    if (scheme) {
+      var s = scheme[1].toLowerCase();
+      if (s === "http" || s === "https" || s === "file") return p;
+      return "";                                   // javascript:, data: 등은 거부
+    }
+
+    return p.replace(/\\/g, "/");                  // 스킴 없는 상대 경로
+  }
+
+  /* 화면에 링크를 걸기 직전에 한 번 더 거른다.
+     예전에 저장됐거나 남의 백업에서 들어온 값도 여기서 막힌다. */
+  function safeHref(p) {
+    return normalizePath(p);
+  }
+
+  /* 과목 · 단원 이름은 "과목::단원" 키로 이어 붙여 쓴다.
+     이름 안에 :: 가 들어가면 키를 되돌릴 때 엉뚱하게 쪼개진다. */
+  function hasKeySeparator(name) {
+    return String(name).indexOf("::") >= 0;
   }
 
   function materialKey(subject, unit) { return subject + "::" + unit; }
@@ -536,8 +562,10 @@ var Store = (function () {
   }
 
   function addMaterial(subject, unit, label, path) {
-    var href = normalizePath(path);
-    if (!href) return "파일 경로나 주소를 입력하세요.";
+    var raw = String(path || "").trim();
+    if (!raw) return "파일 경로나 주소를 입력하세요.";
+    var href = normalizePath(raw);
+    if (!href) return "열 수 없는 주소입니다. 파일 경로나 http 주소를 넣어 주세요.";
     var all = read("materials");
     var k = materialKey(subject, unit);
     if (!all[k]) all[k] = [];
@@ -648,6 +676,7 @@ var Store = (function () {
     deleteMaterial: deleteMaterial,
     materialCount: materialCount,
     normalizePath: normalizePath,
+    safeHref: safeHref,
 
     getPlans: getPlans,
     addPlan: addPlan,

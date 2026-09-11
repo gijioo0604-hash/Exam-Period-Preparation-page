@@ -305,9 +305,14 @@ App.register("plan", {
           /* 이 단원에 걸어 둔 자료 */
           (mats.length
             ? '<div class="mat-row">' + mats.map(function (m) {
-                return '<span class="mat">' +
-                  '<a href="' + App.esc(m.path) + '" target="_blank" rel="noopener" title="' +
-                    App.esc(m.path) + '">' + App.esc(m.label) + "</a>" +
+                /* 저장된 값이라도 링크를 걸기 전에 한 번 더 거른다 */
+                var href = Store.safeHref(m.path);
+                var body = href
+                  ? '<a href="' + App.esc(href) + '" target="_blank" rel="noopener" title="' +
+                    App.esc(href) + '">' + App.esc(m.label) + "</a>"
+                  : '<span class="mat-bad" title="' + App.esc(m.path) +
+                    '">' + App.esc(m.label) + " (열 수 없는 주소)</span>";
+                return '<span class="mat">' + body +
                   '<button data-del-mat="' + App.esc(key + "||" + m.id) +
                     '" type="button" title="링크 지우기">×</button>' +
                 "</span>";

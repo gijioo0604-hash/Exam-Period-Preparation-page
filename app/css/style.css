@@ -779,6 +779,13 @@ td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
   max-width: 240px;
 }
 .mat a:hover { text-decoration: underline; }
+
+/* 열 수 없는 주소는 링크로 만들지 않는다 */
+.mat-bad {
+  color: var(--bad);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 240px;
+}
 .mat button {
   border: none; background: none; cursor: pointer;
   color: var(--text-dim);
