@@ -15,6 +15,8 @@ App.register("schedule", {
     var calY = today.getFullYear();
     var calM = today.getMonth();
 
+    var gcalOpen = false;      // 구글 캘린더 패널 펼침 여부
+
     /* 폼의 날짜칸 기본값 — 달력에서 날짜를 누르면 바뀐다 */
     var formDate = App.todayStr();
 
@@ -51,7 +53,6 @@ App.register("schedule", {
         "</div>" +
 
         gcalAsk() +
-        gcalPanel(all) +
 
         '<div class="card">' +
           Calendar.month(calY, calM, calItems, { max: 3 }) +
@@ -82,7 +83,11 @@ App.register("schedule", {
         (past.length
           ? '<div class="section-head"><h2>지난 일정</h2></div>' +
             '<div class="card"><div class="list">' + past.map(row).join("") + "</div></div>"
-          : "");
+          : "") +
+
+        /* 내보내기 도구는 일정 아래에 둔다.
+           위에 두면 화면을 켤 때마다 정작 일정보다 설정 안내가 먼저 보인다. */
+        gcalPanel(all);
 
       wire();
     }
@@ -126,8 +131,8 @@ App.register("schedule", {
       if (!g.asked || !g.on) {
         /* 껐어도 다시 켤 수 있는 작은 줄만 남긴다 */
         if (g.asked && !g.on) {
-          return '<div class="btn-row" style="margin-bottom:12px">' +
-            '<button class="btn btn-ghost btn-sm" id="gcalReopen" type="button">구글 캘린더 연동 켜기</button>' +
+          return '<div class="btn-row mt-3">' +
+            '<button class="btn btn-ghost btn-sm" id="gcalReopen" type="button">구글 캘린더로 내보내기</button>' +
           "</div>";
         }
         return "";
@@ -135,13 +140,22 @@ App.register("schedule", {
 
       var pending = all.filter(function (s) { return !s.done; });
 
-      return '<div class="card">' +
+      /* 접어 두는 게 기본 — 한 번 설정하면 다시 볼 일이 드물다 */
+      if (!gcalOpen) {
+        return '<div class="section-head"><h2>구글 캘린더</h2></div>' +
+          '<div class="card"><div class="plan-head">' +
+            '<span class="small muted">일정 ' + pending.length + "건을 구글 캘린더로 보낼 수 있습니다</span>" +
+            '<button class="btn btn-sm" id="gcalOpenBtn" type="button">열기</button>' +
+          "</div></div>";
+      }
+
+      return '<div class="section-head"><h2>구글 캘린더</h2>' +
+        '<button class="btn btn-ghost btn-sm" id="gcalOpenBtn" type="button">접기</button></div>' +
+        '<div class="card">' +
         '<div class="plan-head">' +
-          "<strong>구글 캘린더</strong>" +
+          '<span class="small muted">아래로 갈수록 설정이 필요합니다. 위의 두 가지는 바로 됩니다.</span>' +
           '<button class="btn btn-sm btn-ghost" id="gcalOff" type="button">연동 끄기</button>' +
         "</div>" +
-
-        '<p class="small muted mt-1">아래로 갈수록 설정이 필요합니다. 위의 두 가지는 바로 됩니다.</p>' +
 
         '<div class="gcal-way mt-2">' +
           "<strong>일정 하나씩 보내기</strong>" +
@@ -264,10 +278,13 @@ App.register("schedule", {
           "</div>" +
         "</div>" +
         '<div class="row-side">' + dd +
-          (gcalSettings().on
-            ? '<a class="btn btn-sm" href="' + App.esc(GCal.googleLink(s) || "#") +
-              '" target="_blank" rel="noopener" title="구글 캘린더에 추가">캘린더</a>'
-            : "") +
+          (function () {
+            if (!gcalSettings().on) return "";
+            var link = GCal.googleLink(s);
+            if (!link) return "";                 // 날짜가 없으면 보낼 수 없다
+            return '<a class="btn btn-sm" href="' + App.esc(link) +
+                   '" target="_blank" rel="noopener" title="구글 캘린더에 추가">캘린더</a>';
+          })() +
           '<button class="btn btn-sm" data-done="' + s.id + '" type="button">' +
             (s.done ? "되돌리기" : "완료") + "</button>" +
           '<button class="btn btn-sm" data-edit="' + s.id + '" type="button">수정</button>' +
@@ -307,9 +324,20 @@ App.register("schedule", {
         draw();
       });
 
+      var openBtn = App.$("#gcalOpenBtn", mount);
+      if (openBtn) openBtn.addEventListener("click", function () {
+        gcalOpen = !gcalOpen;
+        draw();
+        if (gcalOpen) {
+          var h = App.$("#gcalIcs", mount);
+          if (h) h.scrollIntoView({ block: "center" });
+        }
+      });
+
       var off = App.$("#gcalOff", mount);
       if (off) off.addEventListener("click", function () {
         saveGcal({ on: false });
+        gcalOpen = false;
         App.toast("연동을 껐습니다");
         draw();
       });
