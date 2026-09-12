@@ -400,7 +400,8 @@ input:focus, select:focus, textarea:focus {
 /* ---------- 진도 막대 ---------- */
 
 .bar { height: 7px; border-radius: 20px; background: var(--surface-2); overflow: hidden; }
-.bar > i { display: block; height: 100%; background: var(--accent); border-radius: 20px; transition: width .3s; }
+/* 디자인.md 6 — 막대가 스르륵 차오르는 연출은 쓰지 않는다. 바뀐 순간 그 길이로 있는다. */
+.bar > i { display: block; height: 100%; background: var(--accent); border-radius: 20px; }
 .bar.ok > i  { background: var(--ok); }
 .bar.bad > i { background: var(--bad); }
 
@@ -415,7 +416,8 @@ input:focus, select:focus, textarea:focus {
 .row:last-child { border-bottom: none; }
 .row-main { flex: 1 1 auto; min-width: 0; }
 .row-title { font-size: 13.5px; }
-.row-sub { font-size: 12px; color: var(--text-dim); margin-top: 2px; }
+/* 디자인.md 1·2 — 읽어야 하는 글자다. --text-dim(대비 3.1:1)은 못 쓰고, 12.5px 아래로도 못 내린다. */
+.row-sub { font-size: 12.5px; color: var(--text-mid); margin-top: 2px; }
 .row-side { flex: 0 0 auto; display: flex; gap: 6px; align-items: center; }
 .row.done .row-title { text-decoration: line-through; color: var(--text-dim); }
 
@@ -518,13 +520,14 @@ input:focus, select:focus, textarea:focus {
 }
 .explain strong { color: var(--text); }
 
-/* 해설 끝에 붙는 출처 한 줄 — 어느 자료 어느 항목에서 나왔는지 */
+/* 해설 끝에 붙는 출처 한 줄 — 어느 자료 어느 항목에서 나왔는지.
+   디자인.md 1 — 읽어야 하는 글자이므로 --text-dim(3.1:1)이 아니라 --text-mid(6:1)를 쓴다. */
 .explain .src {
   margin-top: 10px;
   padding-top: 8px;
   border-top: 1px dashed var(--line);
   font-size: 12.5px;
-  color: var(--text-dim);
+  color: var(--text-mid);
   white-space: normal;
   overflow-wrap: anywhere;     /* 파일 이름이 길어도 칸을 넘지 않게 */
 }
