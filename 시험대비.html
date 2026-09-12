@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>선박기관 — 시험 대비</title>
+
+<!-- ============================================================
+     이 파일은 혼자서 열립니다.
+     - 인터넷에서 아무것도 받아오지 않습니다. 글꼴·라이브러리·이미지 전부 없습니다.
+     - 문제·정답·해설이 이 파일 안에 들어 있습니다.
+     - 두 번 눌러 브라우저로 열면 그대로 동작합니다.
+
+     모양은 전부 디자인.md 를 따릅니다. 새 스타일을 만들지 않았습니다.
+     ============================================================ -->
+
+<style>
+/* ---------- 색 — 디자인.md 1번 표 그대로 ---------- */
+
+:root {
+  color-scheme: light;
+
+  --bg:        #f6f7f9;
+  --surface:   #ffffff;
+  --surface-2: #f0f2f5;
+  --line:      #e2e5ea;
+
+  --text:      #1a1d23;   /* 흰 바탕 대비 약 16:1 */
+  --text-mid:  #5b6472;   /* 흰 바탕 대비 약 6:1 */
+  --text-dim:  #8b94a3;   /* 3.1:1 — 읽어야 하는 글자에는 쓰지 않는다 */
+
+  --accent:      #2f6df6;
+  --ok:          #17864f;
+  --ok-soft:     #e2f5eb;
+  --bad:         #cf3b41;
+  --bad-soft:    #fdebec;
+  --warn:        #b7791f;
+  --warn-soft:   #fdf3e0;
+
+  --radius:    12px;
+  --radius-sm: 8px;
+  --shadow:    0 1px 2px rgba(16,24,40,.05), 0 4px 16px rgba(16,24,40,.05);
+
+  --font: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI",
+          "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --bg:        #14161a;
+    --surface:   #1c1f25;
+    --surface-2: #23272e;
+    --line:      #2f343c;
+
+    --text:      #e8eaee;
+    --text-mid:  #a3abb8;
+    --text-dim:  #767f8d;
+
+    --accent:      #5b8dff;
+    --ok:          #4ec98a;
+    --ok-soft:     #17352a;
+    --bad:         #f0777c;
+    --bad-soft:    #3a1f22;
+    --warn:        #e0a94a;
+    --warn-soft:   #35291b;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+  }
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 400;          /* 디자인.md 6 — 300 이하는 쓰지 않는다 */
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;      /* 한글 단어가 줄 끝에서 잘리지 않게 */
+}
+
+/* ---------- 바탕 틀 — 디자인.md 3 ---------- */
+
+.view {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 28px 28px 80px;
+}
+
+.page-head { margin-bottom: 22px; }
+.page-head h1 { margin: 0 0 4px; font-size: 21px; font-weight: 600; letter-spacing: -.02em; line-height: 1.3; }
+.page-head p  { margin: 0; color: var(--text-mid); font-size: 13.5px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);   /* 디자인.md 6 — 그림자는 카드 한 겹만 */
+}
+
+/* ---------- 문제 카드 안의 순서 1~7 — 디자인.md 3 ---------- */
+
+/* 1. 위 줄 */
+.q-top {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.q-meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 18px;
+  padding: 0 8px;
+  border-radius: 20px;
+  background: var(--surface-2);
+  color: var(--text-mid);
+  white-space: nowrap;
+}
+.q-progress {
+  font-size: 12.5px;
+  color: var(--text-dim);      /* 못 읽어도 문제 푸는 데 지장 없는 자리 */
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* 2. 문제 지문 — 화면에서 제일 먼저 읽어야 하므로 본문보다 크다 */
+.q-prompt {
+  font-size: 16.5px;
+  font-weight: 400;
+  line-height: 1.65;
+  margin: 6px 0 18px;
+  word-break: keep-all;
+}
+
+/* 3. 선택지 — 항상 세로로 쌓는다 */
+.choices { display: flex; flex-direction: column; gap: 8px; }
+
+.choice {
+  display: flex; gap: 10px; align-items: flex-start;
+  width: 100%;
+  min-height: 44px;            /* 디자인.md 3 — 손가락으로 누를 수 있는 높이 */
+  text-align: left;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: var(--radius-sm);
+  padding: 11px 13px;
+  font-size: 14px;
+  font-weight: 400;
+  font-family: inherit;
+  color: var(--text);
+  line-height: 1.55;
+  cursor: pointer;
+  word-break: keep-all;
+  /* 디자인.md 6 — 허용되는 움직임은 색 전환뿐이다 */
+  transition: background .12s, border-color .12s;
+}
+.choice:hover:not(:disabled) { background: var(--surface-2); }
+.choice:disabled { cursor: default; }
+
+.choice .idx {
+  flex: 0 0 20px; height: 20px;
+  border-radius: 5px;
+  background: var(--surface-2);
+  color: var(--text-mid);
+  display: grid; place-items: center;
+  font-size: 11px; font-weight: 600;   /* 디자인.md 2 — 11px 은 숫자 배지에만 */
+  margin-top: 1px;
+}
+
+/* 맞음 = 초록, 틀림 = 빨강. 이 두 색을 다른 뜻으로 쓰지 않는다 */
+.choice.correct { border-color: var(--ok);  background: var(--ok-soft); }
+.choice.correct .idx { background: var(--ok);  color: #fff; }
+.choice.wrong   { border-color: var(--bad); background: var(--bad-soft); }
+.choice.wrong .idx   { background: var(--bad); color: #fff; }
+
+/* OX 두 칸만 가로로 둔다 */
+.ox-row { flex-direction: row; gap: 10px; }
+.ox-row .choice { justify-content: center; font-size: 22px; font-weight: 700; padding: 22px; }
+.ox-row .choice .idx { display: none; }
+
+/* 4. 채점 결과 한 줄 — 언제나 선택지 바로 아래 같은 자리 */
+.verdict {
+  display: flex; align-items: center; gap: 8px;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 16px;
+}
+.verdict-ok  { background: var(--ok-soft);  color: var(--ok); }
+.verdict-bad { background: var(--bad-soft); color: var(--bad); }
+
+/* 5. 해설 — 채점하는 순간 펼쳐진 채로 나온다 */
+.explain {
+  margin-top: 12px;
+  padding: 13px 15px;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  font-weight: 400;
+  line-height: 1.7;
+  color: var(--text-mid);
+  word-break: keep-all;
+}
+.explain strong { color: var(--text); font-weight: 600; }
+
+/* 6. 출처 한 줄 — 어느 파일 어느 절에서 나왔는지 */
+.src {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+  font-size: 12.5px;
+  color: var(--text-mid);      /* 읽어야 하는 글자이므로 --text-dim 을 쓰지 않는다 */
+  overflow-wrap: anywhere;
+}
+
+/* 자료에서 근거를 찾지 못한 대목 */
+.no-source {
+  margin-top: 10px;
+  padding: 7px 9px;
+  border-radius: var(--radius-sm);
+  background: var(--warn-soft);
+  color: var(--warn);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+/* 7. 맨 아래 버튼 줄 — 주 버튼은 언제나 오른쪽 끝 */
+.btn-row {
+  display: flex; gap: 8px; align-items: center;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.btn-row .btn-primary { margin-left: auto; }
+
+/* ---------- 버튼 — 디자인.md 5 ---------- */
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px;            /* 누르는 자리 최소 44px */
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-size: 13.5px;
+  font-weight: 400;
+  font-family: inherit;
+  line-height: 1.4;
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+}
+.btn:hover:not(:disabled) { background: var(--surface-2); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+  font-weight: 600;            /* 흰 글자 대비가 4.5:1 턱걸이라 굵기를 낮추지 않는다 */
+}
+.btn-primary:hover:not(:disabled) { background: var(--accent); opacity: .9; }
+
+/* ---------- 결과 화면 ---------- */
+
+.score {
+  font-size: 21px;                     /* 디자인.md 2 — 앱 안에서는 21px 이 최대 */
+  font-weight: 600;
+  letter-spacing: -.02em;
+  line-height: 1.3;
+  margin: 0 0 4px;
+}
+.score-sub { margin: 0 0 18px; font-size: 13.5px; color: var(--text-mid); }
+
+.section-head { margin: 22px 0 10px; }
+.section-head h2 { margin: 0; font-size: 15px; font-weight: 600; }
+
+.wrong-list { display: flex; flex-direction: column; }
+.wrong-row {
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+.wrong-row:last-child { border-bottom: none; }
+.wrong-row .wr-title { font-size: 13.5px; }
+.wrong-row .wr-sub { font-size: 12.5px; color: var(--text-mid); margin-top: 2px; }
+
+.foot-note {
+  margin-top: 26px;
+  font-size: 12.5px;
+  color: var(--text-mid);
+  line-height: 1.7;
+}
+
+/* ---------- 폰 ---------- */
+
+@media (max-width: 560px) {
+  .view { padding: 16px 14px 64px; }
+  .page-head { margin-bottom: 16px; }
+  .page-head h1 { font-size: 19px; }
+
+  .btn { padding: 9px 14px; }
+
+  /* 주 버튼은 가로 전체로 늘린다 */
+  .btn-row { flex-direction: column; align-items: stretch; }
+  .btn-row .btn-primary { margin-left: 0; }
+
+  .ox-row .choice { padding: 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="view">
+
+  <div class="page-head">
+    <h1>선박기관 — 시험 대비</h1>
+    <p>선박기관 학습자료 10개 파일에서만 뽑은 19문제입니다. 인터넷에 연결하지 않습니다.</p>
+  </div>
+
+  <div id="screen"></div>
+
+  <p class="foot-note">
+    모든 문제의 해설 끝에 어느 파일 어느 절에서 나온 내용인지 적혀 있습니다.
+    자료에서 근거를 찾지 못한 대목은 지어내지 않고 <strong>자료에 없음</strong>이라고 표시했습니다.
+    <br>
+    다만 출처가 가리키는 <strong>선박기관 학습자료는 이 저장소에 없습니다.</strong>
+    워크숍에서 받은 자료라 제가 만든 것이 아니어서 올리지 않았습니다.
+    출처를 보고 파일을 찾으면 나오지 않으니, 워크숍 자료를 가진 사람만 대조할 수 있습니다.
+  </p>
+
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   문제 — 전부 실습파일/선박기관/ 안의 자료에서만 뽑았습니다.
+   자료에 없는 내용은 만들지 않았고, 근거가 없는 대목은 missing 에 적었습니다.
+   ============================================================ */
+
+var QUESTIONS = [
+  {
+    unit: "01 디젤기관 기초", level: "중", type: "사지선다",
+    q: "대형 저속 2행정 단류식 디젤기관의 밸브 구성으로 옳은 것은?",
+    choices: [
+      "흡기밸브와 배기밸브를 모두 갖는다",
+      "배기밸브만 있고, 흡기는 실린더 하부의 소기구멍으로 들어온다",
+      "흡기밸브만 있고, 배기는 소기구멍으로 나간다",
+      "밸브가 없고 흡기와 배기를 모두 소기구멍으로 처리한다"
+    ],
+    answer: 1,
+    explain: "4행정 기관은 흡기·배기 밸브를 모두 갖지만, 2행정 단류식에는 배기밸브만 있습니다. 흡기는 실린더 하부의 소기구멍으로 들어옵니다. 2행정은 배기와 흡기를 같은 구간에서 처리해야 해서 신선한 공기로 배기가스를 밀어내는 소기 과정이 필수이고, 대형 저속기관은 단류식이 표준입니다.",
+    src: "01_디젤기관_기초.md 「작동 원리 > 2행정 기관의 소기」, 「2행정과 4행정 비교 > 흡배기 밸브」 / 09_자주_틀리는_지점.md 「뒤집어 외우기 쉬운 짝 > 2행정의 밸브」"
+  },
+  {
+    unit: "01 디젤기관 기초", level: "하", type: "사지선다",
+    q: "4행정 기관이 1사이클을 완성하는 데 필요한 크랭크축 회전은?",
+    choices: ["1회전(360°)", "2회전(720°)", "3회전(1080°)", "4회전(1440°)"],
+    answer: 1,
+    explain: "4행정 기관은 크랭크축 2회전(720°)에 1사이클, 2행정 기관은 1회전(360°)에 1사이클을 완성합니다. 출력 계산에서 4행정은 회전수를 2로 나누고 2행정은 나누지 않는데, 여기서 자주 틀립니다.",
+    src: "01_디젤기관_기초.md 「작동 원리 > 디젤 사이클의 네 행정」 / 09_자주_틀리는_지점.md 「단위에서 틀리는 대목 > 4행정의 사이클 수」"
+  },
+  {
+    unit: "01 디젤기관 기초", level: "중", type: "사지선다",
+    q: "지시마력(IHP)과 제동마력(BHP)의 관계로 옳은 것은?",
+    choices: [
+      "제동마력이 지시마력보다 항상 크다",
+      "지시마력이 항상 크고, 그 차이가 마찰 손실이다",
+      "두 값은 항상 같다",
+      "부하에 따라 크고 작음이 뒤바뀐다"
+    ],
+    answer: 1,
+    explain: "지시마력은 실린더 안에서 발생한 동력이고, 제동마력은 축에서 실제로 꺼내 쓰는 동력입니다. 그 차이가 마찰 손실이며, 두 값의 비율이 기계효율입니다. 그래서 지시마력이 항상 더 큽니다.",
+    src: "01_디젤기관_기초.md 「성능 지표 > 지시마력과 제동마력」 / 09_자주_틀리는_지점.md 「뒤집어 외우기 쉬운 짝 > 지시마력과 제동마력」"
+  },
+  {
+    unit: "02 연료와 윤활", level: "중", type: "사지선다",
+    q: "퓨리파이어(purifier)와 클래리파이어(clarifier)에 대한 설명으로 옳은 것은?",
+    choices: [
+      "퓨리파이어는 고형분을 걸러내며 봉수가 필요 없다",
+      "클래리파이어는 물과 기름을 분리하며 봉수가 필요하다",
+      "퓨리파이어가 물과 기름을 분리하고 봉수가 필요하며, 보통 클래리파이어보다 먼저 거친다",
+      "두 기기는 원리가 같고 설치 순서만 다르다"
+    ],
+    answer: 2,
+    explain: "퓨리파이어는 물과 기름을 분리하며 봉수(sealing water)가 필요합니다. 클래리파이어는 고형분을 제거하며 봉수가 없습니다. 순서는 퓨리파이어가 먼저입니다. 둘 다 원심력으로 비중 차이를 이용하지만 하는 일이 다릅니다.",
+    src: "02_연료와_윤활.md 「유청정기 > 원리」, 「퓨리파이어와 클래리파이어」 / 09_자주_틀리는_지점.md 「뒤집어 외우기 쉬운 짝 > 퓨리파이어와 클래리파이어」"
+  },
+  {
+    unit: "02 연료와 윤활", level: "상", type: "사지선다",
+    q: "비중이 큰 연료를 처리할 때 퓨리파이어의 중력디스크는 어떻게 고르는가?",
+    choices: [
+      "지름이 큰 것을 쓴다",
+      "지름이 작은 것을 쓴다",
+      "연료의 비중과 관계없이 같은 것을 쓴다",
+      "중력디스크는 클래리파이어에만 쓰므로 해당 없다"
+    ],
+    answer: 1,
+    explain: "중력디스크는 퓨리파이어에서 유수 경계면의 위치를 정하는 부품입니다. 비중이 큰 연료일수록 지름이 작은 중력디스크를 씁니다. 잘못 고르면 기름이 물 쪽으로 넘어가거나 물이 기름 쪽으로 섞입니다. 자료도 이 대목을 반대로 외우는 경우가 많다고 짚고 있습니다.",
+    src: "02_연료와_윤활.md 「유청정기 > 중력디스크」 / 09_자주_틀리는_지점.md 「뒤집어 외우기 쉬운 짝 > 중력디스크 지름」"
+  },
+  {
+    unit: "02 연료와 윤활", level: "중", type: "사지선다",
+    q: "저유황 연료를 쓰는 기관의 실린더유 염기가(TBN) 선택으로 옳은 것은?",
+    choices: [
+      "높은 TBN(70~100)을 쓴다",
+      "낮은 TBN(40 이하)을 쓴다",
+      "연료의 황분과 무관하게 정한다",
+      "시스템유와 같은 것을 쓴다"
+    ],
+    answer: 1,
+    explain: "TBN은 연료의 황분이 연소하며 만든 황산을 중화하는 능력입니다. 고유황 연료에는 높은 TBN(70~100), 저유황 연료에는 낮은 TBN(40 이하)을 씁니다. 저유황인데 고TBN을 쓰면 과잉 알칼리로 퇴적물이 생깁니다. 실린더유와 시스템유는 계통이 달라 서로 섞이지 않습니다.",
+    src: "02_연료와_윤활.md 「윤활 > 실린더유와 시스템유」, 「실린더유의 염기가(TBN)」 / 09_자주_틀리는_지점.md 「뒤집어 외우기 쉬운 짝 > 실린더유 TBN」"
+  },
+  {
+    unit: "02 연료와 윤활", level: "하", type: "사지선다",
+    q: "중유를 주기관에 분사하기 직전, 점도를 어느 범위로 맞추는가?",
+    choices: ["2~5 cSt", "10~15 cSt", "60~80 cSt", "380 cSt"],
+    answer: 1,
+    explain: "중유는 상온에서 굳어 흐르지 않으므로 가열기로 데워 분사 직전 점도를 10~15 cSt로 맞춥니다. 점도조절기가 온도를 자동으로 조절합니다. 380 cSt 같은 값은 저장 상태의 점도라 헷갈리기 쉽습니다. 안전을 위해 가열 온도는 인화점보다 낮게 유지하며, 선박용 연료의 인화점은 최소 60℃ 이상이어야 합니다.",
+    src: "02_연료와_윤활.md 「연료유 계통 > 점도와 가열」, 「인화점 관리」 / 09_자주_틀리는_지점.md 「숫자를 외울 때 > 연료 분사 점도」"
+  },
+  {
+    unit: "03 냉각·시동·과급", level: "하", type: "OX",
+    q: "주기관을 직접 냉각하는 것은 해수이고, 청수는 열교환기까지만 들어온다.",
+    choices: ["O", "X"],
+    answer: 1,
+    explain: "반대입니다. 주기관은 부식을 피하려고 청수로 직접 냉각하고, 그 청수를 다시 해수로 식힙니다. 해수는 열교환기까지만 들어오고 기관 내부로는 들어가지 않습니다. 냉각수 출구 온도는 보통 75~85℃로 유지합니다.",
+    src: "03_냉각_시동_과급.md 「냉각수 계통 > 청수 냉각과 해수 냉각」, 「냉각수 온도 관리」 / 09_자주_틀리는_지점.md 「뒤집어 외우기 쉬운 짝 > 청수와 해수」"
+  },
+  {
+    unit: "03 냉각·시동·과급", level: "중", type: "사지선다",
+    q: "전 실린더의 배기온도가 함께 올랐다. 가장 먼저 확인할 것은?",
+    choices: [
+      "배기온도계를 교정한다",
+      "소기압 저하·공기냉각기 막힘 등 급기 계통을 본다",
+      "배기온도 경보 설정값을 올린다",
+      "특정 실린더의 연료분사밸브만 교체한다"
+    ],
+    answer: 1,
+    explain: "배기온도 상승은 원인이 아니라 결과인 경우가 많습니다. 소기압이 낮아지면 공기가 부족해 연소가 나빠지고 배기온도가 오르며, 공기냉각기가 막혀도 소기압이 떨어집니다. 전 실린더가 함께 오르면 과급·냉각 계통을 보고, 특정 실린더만 다르면 그 실린더의 분사·밸브·압축을 봅니다. 경보를 임의로 해제하거나 우회해서는 안 됩니다.",
+    src: "03_냉각_시동_과급.md 「과급기 > 공기냉각기」, 「소기압과 배기온도의 관계」 / 09_자주_틀리는_지점.md 「인과를 거꾸로 보는 대목 > 배기온도 상승」 / 10_기관당직과_비상대응.md 「이상 징후 판단 > 온도 편차」"
+  },
+  {
+    unit: "03 냉각·시동·과급", level: "중", type: "사지선다",
+    q: "기관 시동에 쓰는 시동공기의 압력은 보통 어느 정도인가?",
+    choices: ["2~4 bar", "7~10 bar", "25~30 bar", "100~150 bar"],
+    answer: 2,
+    explain: "시동공기는 보통 25~30 bar의 압축공기이며, 공기병(Air reservoir)에 저장했다가 실린더에 불어넣어 크랭크축을 돌립니다. 2~4 bar는 소기압이라 섞어 쓰면 안 됩니다. 시동공기관에는 역화에 대비한 화염방지기가 있고, 터닝기어가 물려 있으면 시동이 걸리지 않도록 인터록이 걸려 있습니다.",
+    missing: "자료에 없음 — 자료는 \"규정상 일정 횟수 이상 연속 시동이 가능해야 한다\"고만 적고 있고, 그 횟수가 몇 회인지는 나와 있지 않습니다.",
+    src: "03_냉각_시동_과급.md 「시동 계통 > 시동공기」, 「화염방지기」, 「인터록」 / 09_자주_틀리는_지점.md 「숫자를 외울 때 > 시동공기 압력」"
+  },
+  {
+    unit: "04 축계와 추진", level: "중", type: "사지선다",
+    q: "회전수와 피치가 같은데 프로펠러 슬립이 29%에서 38%로 올랐다. 가장 먼저 의심할 것은?",
+    choices: [
+      "기관 출력이 떨어졌다",
+      "선저 오손·프로펠러 손상·황천 조우",
+      "연료의 발열량이 낮아졌다",
+      "조속기가 고장 났다"
+    ],
+    answer: 1,
+    explain: "슬립은 이론상 나아갈 거리와 실제 나아간 거리의 차이 비율이라, 파도·조류·선저 오손이 심하면 커집니다. 슬립이 갑자기 커지면 선저 오손이나 프로펠러 손상을 먼저 의심합니다. 계산 예제도 같은 상황을 두고 기관 자체 문제로 보기 어렵다고 정리하고 있습니다.",
+    src: "04_축계와_추진.md 「프로펠러 > 슬립」 / 08_계산_예제.md 「추진 > 예제 9 — 슬립 변화 해석」 / 09_자주_틀리는_지점.md 「인과를 거꾸로 보는 대목 > 슬립 증가」"
+  },
+  {
+    unit: "05 보조기계", level: "하", type: "사지선다",
+    q: "협약상 조타장치는 타를 한쪽 35°에서 반대쪽 30°까지 몇 초 이내에 돌릴 수 있어야 하는가?",
+    choices: ["14초", "28초", "45초", "60초"],
+    answer: 1,
+    explain: "한쪽 35°에서 반대쪽 30°까지 28초 이내입니다. 35°에서 35°가 아니라는 점에서 자주 틀립니다. 45초는 비상발전기의 자동 기동 시간이라 섞어 외우면 안 됩니다. 조타실 조작이 안 될 때는 타기실에서 직접 조작하는 비상 조타로 전환합니다.",
+    src: "05_보조기계.md 「조타장치 > 조타 시간 요건」, 「비상 조타」 / 09_자주_틀리는_지점.md 「숫자를 외울 때 > 조타 시간」"
+  },
+  {
+    unit: "06 전기와 발전", level: "하", type: "OX",
+    q: "비상발전기는 주전원이 끊어졌을 때 협약상 45초 이내에 자동으로 기동해야 한다.",
+    choices: ["O", "X"],
+    answer: 0,
+    explain: "맞습니다. 비상발전기는 협약상 45초 이내 자동 기동해야 하며, 주전원이 끊겨도 조타·항해등·비상조명·소화펌프에 전원을 공급합니다.",
+    src: "06_전기와_발전.md 「발전기 > 비상발전기」 / 09_자주_틀리는_지점.md 「숫자를 외울 때 > 비상발전기 기동」"
+  },
+  {
+    unit: "06 전기와 발전", level: "중", type: "사지선다",
+    q: "발전기를 병렬로 투입하기 전에 맞춰야 하는 조건이 아닌 것은?",
+    choices: ["전압의 크기", "주파수", "위상", "역률"],
+    answer: 3,
+    explain: "병렬운전 조건은 전압 크기·주파수·위상·상회전 방향 네 가지이고, 하나라도 어긋나면 투입 순간 큰 충격 전류가 흐릅니다. 역률은 투입 전에 맞추는 조건이 아니라, 투입한 뒤 여자 조정으로 무효전력을 나누면서 다루는 값입니다. 유효전력은 조속기로 나눕니다.",
+    src: "06_전기와_발전.md 「병렬운전 > 병렬운전 조건」, 「부하 분담」"
+  },
+  {
+    unit: "08 계산 예제", level: "상", type: "사지선다",
+    q: "압축비가 16이고 행정체적이 30,000 cm³인 기관의 간극체적은?",
+    choices: ["1,875 cm³", "2,000 cm³", "2,143 cm³", "3,000 cm³"],
+    answer: 1,
+    explain: "압축비 = (행정체적 + 간극체적) ÷ 간극체적입니다. 16 = (30,000 + V) ÷ V → 16V = 30,000 + V → 15V = 30,000 → V = 2,000 cm³. 행정체적을 압축비로 그냥 나눠 30,000 ÷ 16 = 1,875를 고르는 것이 가장 흔한 실수인데, 분자에 간극체적이 함께 들어 있다는 것을 놓친 답입니다.",
+    src: "08_계산_예제.md 「기관 제원 > 예제 7 — 간극체적 역산」 / 01_디젤기관_기초.md 「작동 원리 > 유효행정과 실린더 용적」"
+  },
+  {
+    unit: "08 계산 예제", level: "상", type: "사지선다",
+    q: "연료의 저위발열량이 40,500 kJ/kg이고 SFOC가 180 g/kWh일 때 열효율은?",
+    choices: ["39.4%", "44.4%", "49.4%", "54.4%"],
+    answer: 2,
+    explain: "1 kWh는 3,600 kJ입니다. 1 kWh를 내는 데 드는 연료가 180 g = 0.180 kg이므로 공급열량은 0.180 × 40,500 = 7,290 kJ입니다. 열효율 = 3,600 ÷ 7,290 = 0.494, 즉 49.4%입니다. SFOC는 그램 단위라는 점, 1 kWh = 3,600 kJ이라는 점을 놓치면 답이 크게 어긋납니다.",
+    src: "08_계산_예제.md 「연료와 효율 > 예제 4 — 열효율」 / 09_자주_틀리는_지점.md 「단위에서 틀리는 대목 > g/kWh」"
+  },
+  {
+    unit: "09 자주 틀리는 지점", level: "하", type: "OX",
+    q: "1 bar는 100,000 Pa이므로, 출력 계산에 평균유효압력을 bar 단위 그대로 넣으면 10만 배가 틀린다.",
+    choices: ["O", "X"],
+    answer: 0,
+    explain: "맞습니다. 1 bar = 100,000 Pa이라 단위를 바꾸지 않고 넣으면 10만 배가 어긋납니다. 지시마력 예제에서도 평균유효압력 12 bar를 1,200,000 Pa로 바꾼 뒤 계산합니다.",
+    src: "09_자주_틀리는_지점.md 「단위에서 틀리는 대목 > bar와 Pa」 / 08_계산_예제.md 「출력 계산 > 예제 1 — 지시마력」"
+  },
+  {
+    unit: "10 기관당직과 비상대응", level: "중", type: "사지선다",
+    q: "기관실 화재가 났을 때의 조치 순서로 옳은 것은?",
+    choices: [
+      "고정식 소화설비 작동 → 연료 차단 → 통풍 차단 → 인원 대피 확인",
+      "연료 차단 → 통풍 차단 → 인원 대피 확인 → 고정식 소화설비 작동",
+      "인원 대피 확인 → 고정식 소화설비 작동 → 연료 차단 → 통풍 차단",
+      "통풍 차단 → 고정식 소화설비 작동 → 연료 차단 → 인원 대피 확인"
+    ],
+    answer: 1,
+    explain: "연료 차단 → 통풍 차단 → 인원 대피 확인 → 고정식 소화설비 작동 순서입니다. 인원 확인 전에 소화가스를 방출하면 안 됩니다. 비상 상황에서 취한 조치와 시각은 나중에 원인 규명과 책임 판단의 근거가 되므로 반드시 기록합니다.",
+    src: "10_기관당직과_비상대응.md 「비상 절차 > 기관실 화재」, 「기록」"
+  },
+  {
+    unit: "10 기관당직과 비상대응", level: "중", type: "OX",
+    q: "윤활유 압력이 급격히 떨어지면, 먼저 원인을 찾아낸 다음에 기관을 정지한다.",
+    choices: ["O", "X"],
+    answer: 1,
+    explain: "반대입니다. 윤활유 압력이 급격히 떨어지면 즉시 정지가 원칙이며, 원인을 찾는 것보다 정지가 먼저입니다. 연료·윤활 자료에서도 압력이 갑자기 0에 가까워지면 즉시 정지가 원칙이라고 적고 있습니다. 원인은 유량계와 압력계 → 필터 차압 → 펌프 흡입측 → 베어링 간극 순으로 좁혀 갑니다.",
+    src: "10_기관당직과_비상대응.md 「이상 징후 판단 > 압력 저하」 / 02_연료와_윤활.md 「윤활 > 유압 저하 시 확인 순서」"
+  }
+];
+
+/* ============================================================
+   화면 그리기
+   ============================================================ */
+
+var picked = [];                 /* 각 문제에서 고른 번호. 안 풀었으면 null */
+for (var i = 0; i < QUESTIONS.length; i++) { picked.push(null); }
+
+var idx = 0;                     /* 지금 보고 있는 문제 */
+var done = false;                /* 결과 화면인가 */
+
+var screenEl = document.getElementById("screen");
+
+function el(tag, className, text) {
+  var node = document.createElement(tag);
+  if (className) { node.className = className; }
+  if (text !== undefined && text !== null) { node.textContent = text; }
+  return node;
+}
+
+/* 맨위로 = true 일 때만 화면을 위로 올린다.
+   채점할 때도 위로 올리면, 폰에서는 방금 나온 결과 줄과 해설이
+   화면 밖으로 밀려서 다시 내려야 한다. 그래서 문제가 바뀔 때만 올린다. */
+function render(맨위로) {
+  screenEl.textContent = "";
+  screenEl.appendChild(done ? buildResult() : buildQuestion());
+  if (맨위로) { window.scrollTo(0, 0); }
+}
+
+/* ---------- 문제 카드 ---------- */
+
+function buildQuestion() {
+  var q = QUESTIONS[idx];
+  var answered = picked[idx] !== null;
+
+  var card = el("div", "card");
+
+  /* 1. 위 줄 — 왼쪽 뱃지, 오른쪽 진행 표시 */
+  var top = el("div", "q-top");
+  var meta = el("div", "q-meta");
+  meta.appendChild(el("span", "badge", "선박기관"));
+  meta.appendChild(el("span", "badge", q.unit));
+  meta.appendChild(el("span", "badge", q.type));
+  meta.appendChild(el("span", "badge", "난이도 " + q.level));
+  top.appendChild(meta);
+  top.appendChild(el("span", "q-progress", (idx + 1) + " / " + QUESTIONS.length));
+  card.appendChild(top);
+
+  /* 2. 문제 지문 */
+  card.appendChild(el("p", "q-prompt", q.q));
+
+  /* 3. 선택지 — 세로로 쌓고, OX 만 가로 두 칸 */
+  var list = el("div", "choices" + (q.type === "OX" ? " ox-row" : ""));
+  for (var i = 0; i < q.choices.length; i++) {
+    list.appendChild(buildChoice(q, i, answered));
+  }
+  card.appendChild(list);
+
+  /* 4~6. 채점 결과 · 해설 · 출처 — 풀기 전에는 아예 그리지 않는다 */
+  if (answered) {
+    var right = picked[idx] === q.answer;
+
+    var verdict = el("div", "verdict " + (right ? "verdict-ok" : "verdict-bad"));
+    verdict.textContent = right
+      ? "정답입니다"
+      : "틀렸습니다 — 정답은 " + answerLabel(q) + " 입니다";
+    card.appendChild(verdict);
+
+    var explain = el("div", "explain");
+    var head = el("strong", null, "해설 ");
+    explain.appendChild(head);
+    explain.appendChild(document.createTextNode(q.explain));
+
+    if (q.missing) {
+      explain.appendChild(el("div", "no-source", q.missing));
+    }
+    explain.appendChild(el("div", "src", "출처 — 실습파일/선박기관/" + q.src));
+    card.appendChild(explain);
+  }
+
+  /* 7. 맨 아래 버튼 줄 — 주 버튼은 언제나 오른쪽 끝 */
+  var row = el("div", "btn-row");
+
+  var prev = el("button", "btn", "이전 문제");
+  prev.type = "button";
+  prev.disabled = (idx === 0);
+  prev.addEventListener("click", function () {
+    if (idx > 0) { idx--; render(true); }
+  });
+  row.appendChild(prev);
+
+  var next = el("button", "btn btn-primary",
+    idx === QUESTIONS.length - 1 ? "결과 보기" : "다음 문제");
+  next.type = "button";
+  next.addEventListener("click", function () {
+    if (idx === QUESTIONS.length - 1) { done = true; }
+    else { idx++; }
+    render(true);
+  });
+  row.appendChild(next);
+
+  card.appendChild(row);
+  return card;
+}
+
+function buildChoice(q, i, answered) {
+  var btn = el("button", "choice");
+  btn.type = "button";
+
+  var mark = el("span", "idx", String(i + 1));
+  btn.appendChild(mark);
+  btn.appendChild(el("span", null, q.choices[i]));
+
+  if (answered) {
+    btn.disabled = true;
+    /* 맞았으면 고른 칸이 초록.
+       틀렸으면 고른 칸이 빨강이고, 정답 칸도 초록으로 함께 보여 준다. */
+    if (i === q.answer) { btn.className = "choice correct"; }
+    else if (i === picked[idx]) { btn.className = "choice wrong"; }
+  } else {
+    btn.addEventListener("click", function () {
+      if (picked[idx] !== null) { return; }
+      picked[idx] = i;
+      render();
+    });
+  }
+  return btn;
+}
+
+function answerLabel(q) {
+  return q.type === "OX" ? q.choices[q.answer] : (q.answer + 1) + "번";
+}
+
+/* ---------- 결과 화면 ---------- */
+
+function buildResult() {
+  var card = el("div", "card");
+
+  var right = 0, unsolved = 0;
+  for (var i = 0; i < QUESTIONS.length; i++) {
+    if (picked[i] === null) { unsolved++; }
+    else if (picked[i] === QUESTIONS[i].answer) { right++; }
+  }
+
+  card.appendChild(el("p", "score", QUESTIONS.length + "문제 중 " + right + "문제 정답"));
+  card.appendChild(el("p", "score-sub",
+    unsolved > 0 ? ("풀지 않은 문제 " + unsolved + "개는 오답으로 세지 않았습니다.")
+                 : "모든 문제를 풀었습니다."));
+
+  var wrong = [];
+  for (var j = 0; j < QUESTIONS.length; j++) {
+    if (picked[j] !== null && picked[j] !== QUESTIONS[j].answer) { wrong.push(j); }
+  }
+
+  var head = el("div", "section-head");
+  head.appendChild(el("h2", null, wrong.length > 0 ? "틀린 문제" : "틀린 문제 없음"));
+  card.appendChild(head);
+
+  if (wrong.length > 0) {
+    var list = el("div", "wrong-list");
+    for (var k = 0; k < wrong.length; k++) {
+      var n = wrong[k];
+      var q = QUESTIONS[n];
+      var rowEl = el("div", "wrong-row");
+      rowEl.appendChild(el("div", "wr-title", (n + 1) + ". " + q.q));
+      rowEl.appendChild(el("div", "wr-sub", q.unit + " · 정답 " + answerLabel(q)));
+      list.appendChild(rowEl);
+    }
+    card.appendChild(list);
+  } else {
+    card.appendChild(el("p", "score-sub", "틀린 문제가 없습니다."));
+  }
+
+  var row = el("div", "btn-row");
+
+  var back = el("button", "btn", "문제 다시 보기");
+  back.type = "button";
+  back.addEventListener("click", function () {
+    done = false;
+    idx = 0;
+    render(true);
+  });
+  row.appendChild(back);
+
+  var again = el("button", "btn btn-primary", "처음부터 다시 풀기");
+  again.type = "button";
+  again.addEventListener("click", function () {
+    for (var i = 0; i < picked.length; i++) { picked[i] = null; }
+    done = false;
+    idx = 0;
+    render(true);
+  });
+  row.appendChild(again);
+
+  card.appendChild(row);
+  return card;
+}
+
+render(true);
+</script>
+
+</body>
+</html>
